@@ -1,9 +1,11 @@
 package tkom;
 
+import tkom.common.Token;
 import tkom.lexer.Lexer;
 
 import java.awt.*;
 import java.io.*;
+import java.util.ListIterator;
 import javax.swing.JPanel;
 import javax.swing.JFrame;
 
@@ -11,16 +13,19 @@ import javax.swing.JFrame;
 public class Main
 {
     public static void main( String[] args ) throws IOException {
-        File file = new File("src/main/java/tkom");
-        for(String fileNames : file.list()) System.out.println(fileNames);
         FileReader fr=new FileReader("src/main/java/tkom/test.txt");
         BufferedReader br=new BufferedReader(fr);
         Lexer myLexer = new Lexer(br);
-        char c = myLexer.nextChar();
-        while (c != 'o'){
-            c = myLexer.nextChar();
-            System.out.println(c);
-        };
+        while (myLexer.ifRunning()) {
+            myLexer.getToken();
+        }
+        ListIterator litr = null;
+        litr=myLexer.tokens.listIterator();
+        while(litr.hasNext()){
+            Token t = (Token)litr.next();
+            System.out.println(t.getType());
+        }
+
 //        JFrame fr = new JFrame();
 //        fr.setBounds(10, 10, 500, 500);
 //        fr.setDefaultCloseOperation(3);
