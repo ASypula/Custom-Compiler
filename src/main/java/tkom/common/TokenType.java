@@ -23,6 +23,7 @@ public enum TokenType {
     T_LESS,
     T_LESS_OR_EQ,
     T_LINE,
+    T_LIST,
     T_MINUS,
     T_MULT,
     T_NOT,

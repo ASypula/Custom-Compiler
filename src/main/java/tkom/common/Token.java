@@ -1,8 +1,8 @@
 package tkom.common;
 
 public class Token {
-    TokenType TType;
-    String TVal;
+    TokenType type;
+    String val;
     int rowNo;
     int columnNo;
 }
