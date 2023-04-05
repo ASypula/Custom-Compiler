@@ -66,8 +66,8 @@ public class Lexer {
      * Example tokens are: '<' T_LESS or '==' T_EQUALS
      * @throws IOException
      */
-    public Token buildSign() throws IOException {
-        Position startToken = currPos;
+    public Token buildSign() throws IOException, InvalidTokenException {
+        Position startToken = new Position(currPos.rowNo, currPos.colNo);
         Token newToken;
         String newString;
         StringBuilder builder = new StringBuilder();
@@ -82,7 +82,10 @@ public class Lexer {
         else {
             builder.deleteCharAt(builder.length() - 1);
             newString = builder.toString();
-            newToken = new Token(T_SIGNS.get(newString), newString, startToken);
+            if (T_SIGNS.containsKey(newString))
+                newToken = new Token(T_SIGNS.get(newString), newString, startToken);
+            else
+                throw new InvalidTokenException(currPos, Character.toString(currChar));
         }
         return newToken;
     }
@@ -93,7 +96,7 @@ public class Lexer {
      * @throws IOException
      */
     public Token buildIdent() throws IOException {
-        Position startToken = currPos;
+        Position startToken = new Position(currPos.rowNo, currPos.colNo);
         Token t;
         StringBuilder builder = new StringBuilder();
         builder.append(currChar);
@@ -194,9 +197,9 @@ public class Lexer {
         Token newToken;
         if (Character.isLetterOrDigit(currChar))
             newToken = buildNumOrIdent();
-        else if (T_SIGNS.containsKey(Character. toString(currChar))){
-            newToken = buildSign();
-        }
+//        else if (T_SIGNS.containsKey(Character. toString(currChar))){
+//            newToken = buildSign();
+//        }
         else if (currChar=='#') {
             newToken = buildComment();
         }
@@ -204,7 +207,7 @@ public class Lexer {
 //            buildText();
 //        }
         else {
-            throw new InvalidTokenException(currPos, Character.toString(currChar));
+            newToken = buildSign();
         }
         return newToken;
     }
