@@ -57,8 +57,8 @@ public class LexerTest {
 
     @Test
     public void test_T_COMMENT() throws IOException, InvalidTokenException {
-        Token tokenExp=new Token(TokenType.T_COMMENT, "=", new Position(0,0));
-        String x = "=";
+        Token tokenExp=new Token(TokenType.T_COMMENT, "# comment", new Position(0,0));
+        String x = "# comment\n";
         initLexer(x);
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
@@ -102,8 +102,26 @@ public class LexerTest {
 
     @Test
     public void test_T_DOUBLE() throws IOException, InvalidTokenException {
-        Token tokenExp=new Token(TokenType.T_DOUBLE, "}", new Position(0,0));
-        String x = "}";
+        Token tokenExp=new Token(TokenType.T_DOUBLE, "12.956", new Position(0,0));
+        String x = "12.956";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+    }
+
+    @Test
+    public void test_T_DOUBLE_with0() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_DOUBLE, "0.95", new Position(0,0));
+        String x = "0.95";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+    }
+
+    @Test
+    public void test_T_DOUBLE_withMultiple0() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_DOUBLE, "0.095", new Position(0,0));
+        String x = "000.095";
         initLexer(x);
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
@@ -353,8 +371,8 @@ public class LexerTest {
 
     @Test
     public void test_T_STRING() throws IOException, InvalidTokenException {
-        Token tokenExp=new Token(TokenType.T_STRING, ";", new Position(0,0));
-        String x = ";";
+        Token tokenExp=new Token(TokenType.T_STRING, "Hello", new Position(0,0));
+        String x = "\"Hello\"";
         initLexer(x);
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
@@ -368,4 +386,24 @@ public class LexerTest {
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
     }
+
+    @Test
+    public void test_T_STRING_withNewline() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_STRING, "Hello\nt", new Position(0,0));
+        String x = "\"Hello\nt\"";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+    }
+
+    @Test
+    public void test_T_STRING_withEscapeChar() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_STRING, "Hello\n", new Position(0,0));
+        String x = "\"false\"";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+    }
+
+    //TODO: tests for throwing exceptions
 }

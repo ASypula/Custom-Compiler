@@ -18,6 +18,7 @@ public class Lexer {
     Position currPos;
 
     static final int MAX_LENGTH = 200; // maximum number of chars available in a string or a comment
+    static final int MAX_PRECISION = 20; //TODO: change and separate int from double max values
 
     public Lexer(BufferedReader br1) throws IOException {
         br = br1;
@@ -113,32 +114,45 @@ public class Lexer {
         }
     }
 
+    public String buildStringNumber(Position startToken) throws IOException, InvalidTokenException {
+        int precision=1;
+        StringBuilder builder = new StringBuilder();
+        while (Character.isDigit(currChar)) {
+            precision++;
+            if (precision>MAX_PRECISION)
+                throw new InvalidTokenException(startToken, builder.toString(), MAX_PRECISION);
+            builder.append(currChar);
+            nextChar();
+        }
+        return builder.toString();
+    }
+
     /**
      * Tries building a regular number: both integer and double values are supported.
-     * @throws IOException
      */
-    public Token buildNumber() throws IOException {
+    public Token buildNumber() throws IOException, InvalidTokenException {
+        int precision = 1;
         Position startToken = new Position(currPos.rowNo, currPos.colNo);
-        int value = Character.getNumericValue(currChar);
-        if (value != 0){
-            nextChar();
-            //TODO: limit number -> NOT overflow
-            while (Character.isDigit(currChar)){
-                value = value*10 + Character.getNumericValue(currChar);
+        String number = "";
+        if (currChar=='0') {
+            number+=currChar;
+            while (currChar == '0')
                 nextChar();
-            }
         }
+        number+=buildStringNumber(startToken);
         if (currChar == '.'){
-            //TODO: create double
+            number+=currChar;
+            nextChar();
+            number+=buildStringNumber(startToken);
+            return new Token(TokenType.T_DOUBLE, number, startToken);
         }
-        return new Token(TokenType.T_INT, Integer.toString(value), startToken);
+        return new Token(TokenType.T_INT, number, startToken);
     }
 
     /**
      * Depending on first character tries building either a number or an identifier
-     * @throws IOException
      */
-    public Token buildNumOrIdent() throws IOException {
+    public Token buildNumOrIdent() throws IOException, InvalidTokenException {
         Token newToken;
         if (Character.isLetter(currChar))
             newToken = buildIdent();
@@ -152,22 +166,21 @@ public class Lexer {
      * Maximum possible length of comment is MAX_LENGTH.
      * Next input characters are obtained differently as newline character should not be omitted
      * as it ends the comment.
-     * @throws IOException
      */
     public Token buildComment() throws IOException, InvalidTokenException {
         int commentLen = 0;
         Position startToken = new Position(currPos.rowNo, currPos.colNo);
         StringBuilder builder = new StringBuilder();
-        while (currChar != '\n' || commentLen>MAX_LENGTH){
+        while (currChar != '\n' && commentLen<=MAX_LENGTH){
             commentLen++;
+            if (commentLen > MAX_LENGTH){
+                throw new InvalidTokenException(startToken, builder.toString(), MAX_LENGTH);
+            }
             builder.append(currChar);
             nextCharCommText();
         }
         if (currChar == '\n')
             nextChar();
-        if (commentLen > MAX_LENGTH){
-            throw new InvalidTokenException(startToken, builder.toString(), commentLen);
-        }
         String comment = builder.toString();
         return new Token(TokenType.T_COMMENT, comment, startToken);
     }
@@ -177,35 +190,41 @@ public class Lexer {
      * Maximum possible length of text is MAX_LENGTH.
      * Next input characters are obtained differently as escape characters need to be handled
      * and characters as newline or tab should be included in the resulting string.
-     * @throws IOException
      */
-//    public void tryBuildText() throws IOException {
-//        int textLen = 0;
-//        Position startToken = currPos;
-//        StringBuilder builder = new StringBuilder();
-//        while (currChar != '\"' || textLen>MAX_LENGTH){
-    // throw new InvalidTokenException(startToken, builder.toString(), textLen);
-//        }
-//    }
+    public Token buildString() throws IOException, InvalidTokenException {
+        //TODO: Include also escape characters and "
+        int stringLen = 0;
+        Position startToken = new Position(currPos.rowNo, currPos.colNo);
+        StringBuilder builder = new StringBuilder();
+        nextCharCommText();
+        while (currChar != '\"' && stringLen<=MAX_LENGTH){
+            stringLen++;
+            if (stringLen > MAX_LENGTH){
+                throw new InvalidTokenException(startToken, builder.toString(), MAX_LENGTH);
+            }
+            builder.append(currChar);
+            nextCharCommText();
+        }
+        return new Token(TokenType.T_STRING, builder.toString(), startToken);
+    }
 
     /**
      * Depending on first character invokes functions that will start building
      * appropriate tokens.
-     * @throws IOException
      */
     public Token getToken() throws IOException, InvalidTokenException {
         Token newToken;
+        //TODO: not working Token EOF
+        if (!running)
+            return new Token(TokenType.T_EOF, "EOF", new Position(currPos.rowNo, currPos.colNo));
         if (Character.isLetterOrDigit(currChar))
             newToken = buildNumOrIdent();
-//        else if (T_SIGNS.containsKey(Character. toString(currChar))){
-//            newToken = buildSign();
-//        }
         else if (currChar=='#') {
             newToken = buildComment();
         }
-//        else if (currChar=='\"') {
-//            buildText();
-//        }
+        else if (currChar=='\"') {
+            newToken = buildString();
+        }
         else {
             newToken = buildSign();
         }

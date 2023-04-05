@@ -7,8 +7,8 @@ public class InvalidTokenException extends Exception {
         super("Invalid token " + invalidToken + " at the position: " + pos.toString());
     }
 
-    public InvalidTokenException(Position pos, String invalidToken, int invalidLength) {
+    public InvalidTokenException(Position pos, String invalidToken, int maxLength) {
         super("Too long token " + invalidToken + " at the position: " + pos.toString() +
-                " with size: " + invalidLength);
+                " max size: " + maxLength);
     }
 }
