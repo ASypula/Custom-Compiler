@@ -1,10 +1,12 @@
 package tkom;
 
 import tkom.common.Token;
+import tkom.exception.InvalidTokenException;
 import tkom.lexer.Lexer;
 
 import java.awt.*;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.ListIterator;
 import javax.swing.JPanel;
 import javax.swing.JFrame;
@@ -12,18 +14,19 @@ import javax.swing.JFrame;
 
 public class Main
 {
-    public static void main( String[] args ) throws IOException {
+    public static void main( String[] args ) throws IOException, InvalidTokenException {
         FileReader fr=new FileReader("src/main/java/tkom/test.txt");
         BufferedReader br=new BufferedReader(fr);
         Lexer myLexer = new Lexer(br);
+        ArrayList<Token> tokenArray = new ArrayList<>();
         while (myLexer.ifRunning()) {
-            myLexer.getToken();
+            tokenArray.add(myLexer.getToken());
         }
         ListIterator litr = null;
-        litr=myLexer.tokens.listIterator();
+        litr=tokenArray.listIterator();
         while(litr.hasNext()){
             Token t = (Token)litr.next();
-            System.out.println(t.getType());
+            System.out.println(t.getTypeString());
         }
 
 //        JFrame fr = new JFrame();
