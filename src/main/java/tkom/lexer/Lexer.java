@@ -12,13 +12,14 @@ import static tkom.common.TokenMap.T_KEYWORDS;
 import static tkom.common.TokenMap.T_SIGNS;
 
 public class Lexer {
-    boolean running;
+    boolean running;    // set to true as long as EOF is not encountered
     BufferedReader br;
-    public char currChar;
+    char currChar;
     Position currPos;
 
     static final int MAX_LENGTH = 200; // maximum number of chars available in a string or a comment
-    static final int MAX_PRECISION = 20; //TODO: change and separate int from double max values
+    static final int MAX_INT_PRECISION = 9;
+    static final int MAX_DOUBLE_PRECISION = 32;
 
     public Lexer(BufferedReader br1) throws IOException {
         br = br1;
@@ -41,23 +42,17 @@ public class Lexer {
                 currPos.colNo++;
             currInt=br.read();
         }
-        if (currInt == -1) {
+        if (currInt == -1)
             running = false;
-            // return;
-            // End of file
-            //TODO: smarter return
-        }
         currChar = (char)currInt;
     }
 
     public void nextCharCommText() throws IOException {
         int currInt=br.read();
         currPos.rowNo++;
-        if (currInt == -1) {
+        if (currInt == -1)
             running = false;
-            // return;
-        }
-        if ((char)currInt == '\n')
+        else if ((char)currInt == '\n')
             currPos.colNo++;
         currChar = (char)currInt;
     }
@@ -70,23 +65,24 @@ public class Lexer {
     public Token buildSign() throws IOException, InvalidTokenException {
         Position startToken = new Position(currPos.rowNo, currPos.colNo);
         Token newToken;
-        String newString;
         StringBuilder builder = new StringBuilder();
         builder.append(currChar);
         nextChar();
         builder.append(currChar);
+        // First check for a two-character sign
         if (T_SIGNS.containsKey(builder.toString())){
-            newString = builder.toString();
+            String newString = builder.toString();
             newToken = new Token(T_SIGNS.get(newString), newString, startToken);
             nextChar();
         }
+        // Next check for a single character sign
         else {
             builder.deleteCharAt(builder.length() - 1);
-            newString = builder.toString();
+            String newString = builder.toString();
             if (T_SIGNS.containsKey(newString))
                 newToken = new Token(T_SIGNS.get(newString), newString, startToken);
             else
-                throw new InvalidTokenException(currPos, Character.toString(currChar));
+                throw new InvalidTokenException(startToken, newString);
         }
         return newToken;
     }
@@ -98,11 +94,10 @@ public class Lexer {
      */
     public Token buildIdent() throws IOException {
         Position startToken = new Position(currPos.rowNo, currPos.colNo);
-        Token t;
         StringBuilder builder = new StringBuilder();
         builder.append(currChar);
         nextChar();
-        while (Character.isLetterOrDigit(currChar) || currChar == '_'){
+        while (running && Character.isLetterOrDigit(currChar) || currChar == '_'){
             builder.append(currChar);
             nextChar();
         }
@@ -117,10 +112,10 @@ public class Lexer {
     public String buildStringNumber(Position startToken) throws IOException, InvalidTokenException {
         int precision=1;
         StringBuilder builder = new StringBuilder();
-        while (Character.isDigit(currChar)) {
+        while (running && Character.isDigit(currChar)) {
             precision++;
-            if (precision>MAX_PRECISION)
-                throw new InvalidTokenException(startToken, builder.toString(), MAX_PRECISION);
+            if (precision>MAX_DOUBLE_PRECISION)
+                throw new InvalidTokenException(startToken, builder.toString(), MAX_DOUBLE_PRECISION);
             builder.append(currChar);
             nextChar();
         }
@@ -131,7 +126,6 @@ public class Lexer {
      * Tries building a regular number: both integer and double values are supported.
      */
     public Token buildNumber() throws IOException, InvalidTokenException {
-        int precision = 1;
         Position startToken = new Position(currPos.rowNo, currPos.colNo);
         String number = "";
         if (currChar=='0') {
@@ -146,6 +140,8 @@ public class Lexer {
             number+=buildStringNumber(startToken);
             return new Token(TokenType.T_DOUBLE, number, startToken);
         }
+        if (number.length() > MAX_INT_PRECISION)
+            return new Token(TokenType.T_DOUBLE, number, startToken);
         return new Token(TokenType.T_INT, number, startToken);
     }
 
@@ -171,11 +167,10 @@ public class Lexer {
         int commentLen = 0;
         Position startToken = new Position(currPos.rowNo, currPos.colNo);
         StringBuilder builder = new StringBuilder();
-        while (currChar != '\n' && commentLen<=MAX_LENGTH){
+        while (running && currChar != '\n' && commentLen<=MAX_LENGTH){
             commentLen++;
-            if (commentLen > MAX_LENGTH){
+            if (commentLen > MAX_LENGTH)
                 throw new InvalidTokenException(startToken, builder.toString(), MAX_LENGTH);
-            }
             builder.append(currChar);
             nextCharCommText();
         }
@@ -192,20 +187,29 @@ public class Lexer {
      * and characters as newline or tab should be included in the resulting string.
      */
     public Token buildString() throws IOException, InvalidTokenException {
-        //TODO: Include also escape characters and "
         int stringLen = 0;
         Position startToken = new Position(currPos.rowNo, currPos.colNo);
         StringBuilder builder = new StringBuilder();
         nextCharCommText();
-        while (currChar != '\"' && stringLen<=MAX_LENGTH){
+        while (running && currChar != '\"'){
             stringLen++;
             if (stringLen > MAX_LENGTH){
                 throw new InvalidTokenException(startToken, builder.toString(), MAX_LENGTH);
             }
+            if (currChar == '\\') {
+                nextCharCommText();
+                if (currChar != '\"')
+                    builder.append('\\');
+            }
             builder.append(currChar);
             nextCharCommText();
         }
-        return new Token(TokenType.T_STRING, builder.toString(), startToken);
+        if (currChar == '\"') {
+            nextChar();
+            return new Token(TokenType.T_STRING, builder.toString(), startToken);
+        }
+        else
+            throw new InvalidTokenException(startToken, builder.toString());
     }
 
     /**
@@ -214,25 +218,16 @@ public class Lexer {
      */
     public Token getToken() throws IOException, InvalidTokenException {
         Token newToken;
-        //TODO: not working Token EOF
         if (!running)
             return new Token(TokenType.T_EOF, "EOF", new Position(currPos.rowNo, currPos.colNo));
         if (Character.isLetterOrDigit(currChar))
             newToken = buildNumOrIdent();
-        else if (currChar=='#') {
+        else if (currChar=='#')
             newToken = buildComment();
-        }
-        else if (currChar=='\"') {
+        else if (currChar=='\"')
             newToken = buildString();
-        }
-        else {
+        else
             newToken = buildSign();
-        }
         return newToken;
     }
-
-    public boolean ifRunning(){
-        return running;
-    }
-
 }

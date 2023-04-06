@@ -20,6 +20,7 @@ public class Position {
 
     @Override
     public String toString() {
-        return "Row no: " + rowNo + ", column no: " + colNo;
+        return "row no: " + rowNo + ", column no: " + colNo;
     }
+
 }

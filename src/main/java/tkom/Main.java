@@ -1,6 +1,7 @@
 package tkom;
 
 import tkom.common.Token;
+import tkom.common.TokenType;
 import tkom.exception.InvalidTokenException;
 import tkom.lexer.Lexer;
 
@@ -19,14 +20,18 @@ public class Main
         BufferedReader br=new BufferedReader(fr);
         Lexer myLexer = new Lexer(br);
         ArrayList<Token> tokenArray = new ArrayList<>();
-        while (myLexer.ifRunning()) {
-            tokenArray.add(myLexer.getToken());
+        Token newToken = myLexer.getToken();
+        tokenArray.add(newToken);
+        while (newToken.getType() != TokenType.T_EOF) {
+            newToken = myLexer.getToken();
+            tokenArray.add(newToken);
         }
         ListIterator litr = null;
         litr=tokenArray.listIterator();
         while(litr.hasNext()){
             Token t = (Token)litr.next();
             System.out.println(t.getTypeString());
+            System.out.println(t.getValue());
         }
 
 //        JFrame fr = new JFrame();

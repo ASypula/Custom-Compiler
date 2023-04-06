@@ -9,7 +9,7 @@ import tkom.lexer.Lexer;
 
 import java.io.*;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class LexerTest {
 
@@ -138,8 +138,8 @@ public class LexerTest {
 
     @Test
     public void test_T_EOF() throws IOException, InvalidTokenException {
-        Token tokenExp=new Token(TokenType.T_EOF, "}", new Position(0,0));
-        String x = "}";
+        Token tokenExp=new Token(TokenType.T_EOF, "EOF", new Position(0,0));
+        String x = "";
         initLexer(x);
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
@@ -398,11 +398,32 @@ public class LexerTest {
 
     @Test
     public void test_T_STRING_withEscapeChar() throws IOException, InvalidTokenException {
-        Token tokenExp=new Token(TokenType.T_STRING, "Hello\n", new Position(0,0));
-        String x = "\"false\"";
+        Token tokenExp=new Token(TokenType.T_STRING, "\"name\"", new Position(0,0));
+        String x = "\"\\\"name\\\"\"";
         initLexer(x);
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
+    }
+    @Test
+    public void test_T_STRING_withSlashChar() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_STRING, "\\name", new Position(0,0));
+        String x = "\"\\name\"";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+    }
+
+    @Test
+    public void testException_unknownChar() throws IOException {
+        Position pos = new Position(0,0);
+        String x = "%";
+        initLexer(x);
+        Exception exception = assertThrows(InvalidTokenException.class, () -> {
+            Token t = myLexer.getToken();
+        });
+        String expectedMessage = "Invalid token " + x + " at the position: " + pos.toString();
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
     }
 
     //TODO: tests for throwing exceptions
