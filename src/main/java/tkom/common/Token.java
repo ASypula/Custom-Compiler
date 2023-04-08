@@ -5,6 +5,12 @@ public class Token {
     String value;
     Position startPos;
 
+    /**
+     * Token for Lexer
+     * @param t     type of the token
+     * @param val   actual string-text of the token
+     * @param pos   position of first character in the text of the token
+     */
     public Token(TokenType t, String val, Position pos){
         type = t;
         value = val;

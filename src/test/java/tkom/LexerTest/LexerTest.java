@@ -8,6 +8,7 @@ import tkom.exception.InvalidTokenException;
 import tkom.lexer.Lexer;
 
 import java.io.*;
+import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -418,12 +419,22 @@ public class LexerTest {
         Position pos = new Position(0,0);
         String x = "%";
         initLexer(x);
-        Exception exception = assertThrows(InvalidTokenException.class, () -> {
-            Token t = myLexer.getToken();
-        });
-        String expectedMessage = "Invalid token " + x + " at the position: " + pos.toString();
+        Exception exception = assertThrows(InvalidTokenException.class, () -> myLexer.getToken());
+        String expectedMessage = "Invalid token " + x + " at the position: " + pos;
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void testException_tooLongComment() throws IOException {
+        Position pos = new Position(0,0);
+        int size = 210;
+        char[] longArray = new char[size];
+        for (int i=0; i<size; i++)
+            longArray[i] = 'x';
+        String x = "#" + Arrays.toString(longArray);
+        initLexer(x);
+        assertThrows(InvalidTokenException.class, () -> myLexer.getToken());
     }
 
     //TODO: tests for throwing exceptions
