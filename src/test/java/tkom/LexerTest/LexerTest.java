@@ -8,6 +8,7 @@ import tkom.exception.InvalidTokenException;
 import tkom.lexer.Lexer;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.junit.Assert.*;
@@ -437,5 +438,32 @@ public class LexerTest {
         assertThrows(InvalidTokenException.class, () -> myLexer.getToken());
     }
 
-    //TODO: tests for throwing exceptions
+    @Test
+    public void test_Sequence1() throws IOException, InvalidTokenException {
+        ArrayList<Token> expectedTokens = new ArrayList<Token>();
+        expectedTokens.add(new Token(TokenType.T_WHILE, "while", new Position(0,0)));
+        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_L, "(", new Position(5,0)));
+        expectedTokens.add(new Token(TokenType.T_IDENT, "i", new Position(6,0)));
+        expectedTokens.add(new Token(TokenType.T_LESS, "<", new Position(7,0)));
+        expectedTokens.add(new Token(TokenType.T_INT, "20", new Position(8,0)));
+        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_R, ")", new Position(10,0)));
+        expectedTokens.add(new Token(TokenType.T_PRINT, "print", new Position(0,1)));
+        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_L, "(", new Position(5,1)));
+        expectedTokens.add(new Token(TokenType.T_STRING, "Hello", new Position(6,1)));
+        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_R, ")", new Position(13,1)));
+        expectedTokens.add(new Token(TokenType.T_SEMICOLON, ";", new Position(14,1)));
+        String x = "while   (i < 20)\n print(\"Hello\");";
+        ArrayList<Token> returnedTokens = new ArrayList<Token>();
+        initLexer(x);
+        while (myLexer.isRunning()) {
+            Token newToken = myLexer.getToken();
+            returnedTokens.add(newToken);
+        }
+        for (int i = 0; i<returnedTokens.size(); i++)
+            assertToken(expectedTokens.get(i), returnedTokens.get(i));
+        Token newToken = myLexer.getToken();
+        assertToken(newToken, new Token(TokenType.T_EOF, "EOF", new Position(15,1)));
+    }
+
+
 }

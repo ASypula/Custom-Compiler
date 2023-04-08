@@ -44,8 +44,10 @@ public class Lexer {
         int currInt=br.read();
         currPos.rowNo++;
         while (currInt != -1 && Character.isWhitespace((char)currInt)){
-            if ((char)currInt == '\n')
+            if ((char)currInt == '\n') {
+                currPos.rowNo = 0;
                 currPos.colNo++;
+            }
             currInt=br.read();
         }
         if (currInt == -1)
@@ -64,8 +66,10 @@ public class Lexer {
         currPos.rowNo++;
         if (currInt == -1)
             running = false;
-        else if ((char)currInt == '\n')
+        else if ((char)currInt == '\n'){
+            currPos.rowNo = 0;
             currPos.colNo++;
+        }
         currChar = (char)currInt;
     }
 
@@ -260,5 +264,9 @@ public class Lexer {
         else
             newToken = buildSign();
         return newToken;
+    }
+
+    public boolean isRunning(){
+        return running;
     }
 }
