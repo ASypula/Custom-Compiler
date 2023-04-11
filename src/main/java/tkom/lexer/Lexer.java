@@ -8,9 +8,16 @@ import tkom.exception.InvalidTokenException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import static tkom.common.tokens.TokenMap.T_KEYWORDS;
 import static tkom.common.tokens.TokenMap.T_SIGNS;
+
+//TODO: not throw exceptions when e.g. a colon is placed instead of a semicolon, wait with such exceptions to parser to throw a more meaningful message
+//TODO: not go back/cofac sie when building a sign; use a different method
+//TODO: more corner case tests as e.g. number with nothing after a dot
+//TODO: later additional layer between lexer and parser to omit comments
 
 public class Lexer {
     boolean running;    // set to true as long as EOF is not encountered
@@ -22,6 +29,8 @@ public class Lexer {
     static final int MAX_LENGTH = 200; // maximum number of chars available in a string or a comment
     static final int MAX_INT_PRECISION = 9;
     static final int MAX_DOUBLE_PRECISION = 32;
+
+    List<Character> newlineChars = Arrays.asList('\n', '\r');
 
     /**
      * Lexer constructor
@@ -45,7 +54,7 @@ public class Lexer {
         int currInt=br.read();
         br.currPos.rowNo++;
         while (currInt != -1 && Character.isWhitespace((char)currInt)){
-            if ((char)currInt == '\n') {
+            if (newlineChars.contains((char)currInt)) {
                 br.currPos.rowNo = 0;
                 br.currPos.colNo++;
             }
@@ -67,7 +76,7 @@ public class Lexer {
         br.currPos.rowNo++;
         if (currInt == -1)
             running = false;
-        else if ((char)currInt == '\n'){
+        else if (newlineChars.contains((char)currInt)){
             br.currPos.rowNo = 0;
             br.currPos.colNo++;
         }
@@ -216,14 +225,14 @@ public class Lexer {
         int commentLen = 0;
         Position firstPos = new Position(br.currPos.rowNo, br.currPos.colNo);
         StringBuilder builder = new StringBuilder();
-        while (running && currChar != '\n' && commentLen<=MAX_LENGTH){ //TODO: wszystkie znaki konca linii
+        while (running && !newlineChars.contains(currChar) && commentLen<=MAX_LENGTH){
             commentLen++;
             builder.append(currChar);
             nextCharCommText();
         }
         if (commentLen > MAX_LENGTH)
             throw new InvalidTokenException(firstPos, builder.toString(), MAX_LENGTH);
-        if (currChar == '\n')
+        if (newlineChars.contains(currChar))
             nextChar();
         currToken = new Token(TokenType.T_COMMENT, firstPos);
         return true;

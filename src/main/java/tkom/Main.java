@@ -1,28 +1,30 @@
 package tkom;
 
-import tkom.common.Token;
-import tkom.common.TokenType;
+import tkom.common.Position;
+import tkom.common.tokens.Token;
+import tkom.common.tokens.TokenInt;
+import tkom.common.tokens.TokenType;
 import tkom.exception.InvalidTokenException;
 import tkom.lexer.Lexer;
 
-import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.ListIterator;
-import javax.swing.JPanel;
-import javax.swing.JFrame;
 
 
 public class Main
 {
     public static void main( String[] args ) throws IOException, InvalidTokenException {
-        FileReader fr=new FileReader("src/main/java/tkom/test.txt");
+        String filename = "src/main/java/tkom/test.txt";
+        if (args.length == 1)
+            filename = "src/main/java/tkom/" + args[0];
+        FileReader fr=new FileReader(filename);
         BufferedReader br=new BufferedReader(fr);
         Lexer myLexer = new Lexer(br);
         ArrayList<Token> tokenArray = new ArrayList<>();
         Token newToken = myLexer.getToken();
         tokenArray.add(newToken);
-        while (newToken.getType() != TokenType.T_EOF) {
+        while (myLexer.isRunning()) {
             newToken = myLexer.getToken();
             tokenArray.add(newToken);
         }
@@ -31,9 +33,12 @@ public class Main
         while(litr.hasNext()){
             Token t = (Token)litr.next();
             System.out.println(t.getTypeString());
-            System.out.println(t.getValue());
+            System.out.println(t.getPosition());
         }
 
+
+
+        // For displaying
 //        JFrame fr = new JFrame();
 //        fr.setBounds(10, 10, 500, 500);
 //        fr.setDefaultCloseOperation(3);
