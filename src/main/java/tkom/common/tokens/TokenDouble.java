@@ -18,7 +18,8 @@ public class TokenDouble extends Token{
         value = val;
     }
 
-    public double getValue(){
+
+    public double getDoubleValue(){
         return value;
     }
 }

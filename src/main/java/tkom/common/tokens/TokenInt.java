@@ -17,7 +17,7 @@ public class TokenInt extends Token {
         value = val;
     }
 
-    public int getValue(){
+    public int getIntValue(){
         return value;
     }
 

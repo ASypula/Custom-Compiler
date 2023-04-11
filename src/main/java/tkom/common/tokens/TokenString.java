@@ -17,7 +17,7 @@ public class TokenString extends Token{
         value = val;
     }
 
-    public String getValue(){
+    public String getStringValue(){
         return value;
     }
 }

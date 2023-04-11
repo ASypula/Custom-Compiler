@@ -25,5 +25,20 @@ public class Token {
     public Position getPosition(){
         return startPos;
     }
+
+    public int getIntValue()
+    {
+        return 0;
+    }
+
+    public double getDoubleValue()
+    {
+        return 0;
+    }
+
+    public String getStringValue()
+    {
+        return "0";
+    }
 }
 

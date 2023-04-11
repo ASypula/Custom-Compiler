@@ -3,6 +3,8 @@ package tkom.LexerTest;
 import org.junit.Test;
 import tkom.common.Position;
 import tkom.common.tokens.Token;
+import tkom.common.tokens.TokenInt;
+import tkom.common.tokens.TokenString;
 import tkom.common.tokens.TokenType;
 import tkom.exception.InvalidTokenException;
 import tkom.lexer.Lexer;
@@ -16,6 +18,7 @@ import static org.junit.Assert.*;
 public class LexerTest {
 
     private Lexer myLexer;
+    double epsilon = 0.000001;
 
     private void initLexer(String input) throws IOException {
         InputStream initialStream = new ByteArrayInputStream(input.getBytes());
@@ -100,34 +103,37 @@ public class LexerTest {
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
     }
-//
-//    @Test
-//    public void test_T_DOUBLE() throws IOException, InvalidTokenException {
-//        Token tokenExp=new Token(TokenType.T_DOUBLE, "12.956", new Position(0,0));
-//        String x = "12.956";
-//        initLexer(x);
-//        Token t = myLexer.getToken();
-//        assertToken(tokenExp, t);
-//    }
-//
-//    @Test
-//    public void test_T_DOUBLE_with0() throws IOException, InvalidTokenException {
-//        Token tokenExp=new Token(TokenType.T_DOUBLE, "0.95", new Position(0,0));
-//        String x = "0.95";
-//        initLexer(x);
-//        Token t = myLexer.getToken();
-//        assertToken(tokenExp, t);
-//    }
-//
-//    @Test
-//    public void test_T_DOUBLE_withMultiple0() throws IOException, InvalidTokenException {
-//        Token tokenExp=new Token(TokenType.T_DOUBLE, "0.095", new Position(0,0));
-//        String x = "000.095";
-//        initLexer(x);
-//        Token t = myLexer.getToken();
-//        assertToken(tokenExp, t);
-//    }
-//
+
+    @Test
+    public void test_T_DOUBLE() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_DOUBLE, new Position(0,0));
+        String x = "12.956";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+        assertTrue(Math.abs(t.getDoubleValue() - Double.valueOf(x)) < epsilon);
+    }
+
+    @Test
+    public void test_T_DOUBLE_with0() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_DOUBLE, new Position(0,0));
+        String x = "0.95";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+        assertTrue(Math.abs(t.getDoubleValue() - Double.valueOf(x)) < epsilon);
+    }
+
+    @Test
+    public void test_T_DOUBLE_withMultiple0() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_DOUBLE, new Position(0,0));
+        String x = "000.095";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+        assertTrue(Math.abs(t.getDoubleValue() - Double.valueOf(x)) < epsilon);
+    }
+
     @Test
     public void test_T_ELSE() throws IOException, InvalidTokenException {
         Token tokenExp=new Token(TokenType.T_ELSE, new Position(0,0));
@@ -190,41 +196,44 @@ public class LexerTest {
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
     }
-//
-//    @Test
-//    public void test_T_IDENT1() throws IOException, InvalidTokenException {
-//        Token tokenExp=new Token(TokenType.T_IDENT, "value1", new Position(0,0));
-//        String x = "value1";
-//        initLexer(x);
-//        Token t = myLexer.getToken();
-//        assertToken(tokenExp, t);
-//    }
-//
-//    @Test
-//    public void test_T_IDENT2() throws IOException, InvalidTokenException {
-//        Token tokenExp=new Token(TokenType.T_IDENT, "value_if2", new Position(0,0));
-//        String x = "value_if2";
-//        initLexer(x);
-//        Token t = myLexer.getToken();
-//        assertToken(tokenExp, t);
-//    }
-//
-//    @Test
-//    public void test_T_IF() throws IOException, InvalidTokenException {
-//        Token tokenExp=new Token(TokenType.T_IF, "if", new Position(0,0));
-//        String x = "if";
-//        initLexer(x);
-//        Token t = myLexer.getToken();
-//        assertToken(tokenExp, t);
-//    }
-//    @Test
-//    public void test_T_INT() throws IOException, InvalidTokenException {
-//        Token tokenExp=new Token(TokenType.T_INT, "123", new Position(0,0));
-//        String x = "123";
-//        initLexer(x);
-//        Token t = myLexer.getToken();
-//        assertToken(tokenExp, t);
-//    }
+
+    @Test
+    public void test_T_IDENT1() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_IDENT, new Position(0,0));
+        String x = "value1";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+        assertEquals(t.getStringValue(), x);
+    }
+
+    @Test
+    public void test_T_IDENT2() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_IDENT, new Position(0,0));
+        String x = "value_if2";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+        assertEquals(t.getStringValue(), x);
+    }
+
+    @Test
+    public void test_T_IF() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_IF, new Position(0,0));
+        String x = "if";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+    }
+    @Test
+    public void test_T_INT() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_INT, new Position(0,0));
+        String x = "123";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+        assertEquals((int)Integer.valueOf(x), t.getIntValue());
+    }
 
     @Test
     public void test_T_LESS() throws IOException, InvalidTokenException {
@@ -388,15 +397,16 @@ public class LexerTest {
         assertToken(tokenExp, t);
     }
 
-//    @Test
-//    public void test_T_IDENT_while() throws IOException, InvalidTokenException {
-//        Token tokenExp=new Token(TokenType.T_IDENT, "whileident", new Position(0,0));
-//        String x = "whileident";
-//        initLexer(x);
-//        Token t = myLexer.getToken();
-//        assertToken(tokenExp, t);
-//    }
-//
+    @Test
+    public void test_T_IDENT_while() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_IDENT, new Position(0,0));
+        String x = "whileident";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+        assertEquals(x, t.getStringValue());
+    }
+
 //    @Test
 //    public void test_T_STRING_withNewline() throws IOException, InvalidTokenException {
 //        Token tokenExp=new Token(TokenType.T_STRING, "Hello\nt", new Position(0,0));
@@ -451,13 +461,13 @@ public class LexerTest {
 //        ArrayList<Token> expectedTokens = new ArrayList<Token>();
 //        expectedTokens.add(new Token(TokenType.T_WHILE, new Position(0,0)));
 //        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_L, new Position(5,0)));
-//        expectedTokens.add(new Token(TokenType.T_IDENT, "i", new Position(6,0)));
+//        expectedTokens.add(new Token(TokenType.T_IDENT, new Position(6,0)));
 //        expectedTokens.add(new Token(TokenType.T_LESS, new Position(7,0)));
-//        expectedTokens.add(new Token(TokenType.T_INT, "20", new Position(8,0)));
+//        expectedTokens.add(new Token(TokenType.T_INT, new Position(8,0)));
 //        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_R, new Position(10,0)));
 //        expectedTokens.add(new Token(TokenType.T_PRINT, new Position(0,1)));
 //        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_L, new Position(5,1)));
-//        expectedTokens.add(new Token(TokenType.T_STRING, "Hello", new Position(6,1)));
+//        expectedTokens.add(new Token(TokenType.T_STRING, new Position(6,1)));
 //        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_R, new Position(13,1)));
 //        expectedTokens.add(new Token(TokenType.T_SEMICOLON, new Position(14,1)));
 //        String x = "while   (i < 20)\n print(\"Hello\");";
@@ -470,7 +480,7 @@ public class LexerTest {
 //        for (int i = 0; i<returnedTokens.size(); i++)
 //            assertToken(expectedTokens.get(i), returnedTokens.get(i));
 //        Token newToken = myLexer.getToken();
-//        assertToken(newToken, new Token(TokenType.T_EOF, "EOF", new Position(15,1)));
+//        assertToken(newToken, new Token(TokenType.T_EOF, new Position(15,1)));
 //    }
 //
 

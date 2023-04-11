@@ -1,5 +1,7 @@
 package tkom.lexer;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import tkom.common.Position;
 import tkom.common.tokens.*;
 import tkom.exception.InvalidTokenException;
@@ -13,6 +15,8 @@ import static tkom.common.tokens.TokenMap.T_SIGNS;
 public class Lexer {
     boolean running;    // set to true as long as EOF is not encountered
     BufferedReader br;
+
+    Token currToken;
     char currChar;
     Position currPos;
 
@@ -108,7 +112,9 @@ public class Lexer {
      * or a language keyword e.g. 'if'
      * @throws IOException              on BufferedReader error
      */
-    public Token buildIdentifier() throws IOException {
+    public boolean tryBuildIdentifier() throws IOException {
+        if (!Character.isLetter(currChar))
+            return false;
         Position firstPos = new Position(currPos.rowNo, currPos.colNo);
         StringBuilder builder = new StringBuilder();
         builder.append(currChar);
@@ -119,58 +125,66 @@ public class Lexer {
         }
         String newString = builder.toString();
         if (T_KEYWORDS.containsKey(newString))
-            return new Token(T_KEYWORDS.get(newString), firstPos);
+            currToken = new Token(T_KEYWORDS.get(newString), firstPos);
         else
-            return new TokenString(TokenType.T_IDENT, firstPos, newString);
+            currToken = new TokenString(TokenType.T_IDENT, firstPos, newString);
+        return true;
     }
 
     /**
-     * Builds a number as a String.
+     * Builds a number as an integer. Counts the total number of digits to disable overflow exception
+     * and to later be able to create double value by dividing int number by the digit count.
      * Separately takes care of the total and fractional part.
      * @param firstPos                  position of the first char of the token
-     * @return                          part of the number as a String
+     * @return                          pair: L - calculated number, R - count of digits
      * @throws IOException              on BufferedReader error
      * @throws InvalidTokenException    on too long token
      */
-    public String buildStringNumber(Position firstPos) throws IOException, InvalidTokenException {
-        int precision=1;
-        StringBuilder builder = new StringBuilder();
+    public ImmutablePair<Integer, Integer> buildNumber(Position firstPos) throws IOException, InvalidTokenException {
+        int count = 0;
+        int number =0;
         while (running && Character.isDigit(currChar)) {
-            precision++;
-            if (precision>MAX_DOUBLE_PRECISION)
-                throw new InvalidTokenException(firstPos, builder.toString(), MAX_DOUBLE_PRECISION);
-            builder.append(currChar);
+            count++;
+            if (count>MAX_DOUBLE_PRECISION)
+                throw new InvalidTokenException(firstPos, Integer.toString(number), MAX_DOUBLE_PRECISION);
+            number = number*10 + Character.getNumericValue(currChar);
             nextChar();
         }
-        return builder.toString();
+        return new ImmutablePair (number, count);
     }
 
 
     /**
-     * Builds a number, both Int and Double are supported.
-     * @return                          new numerical Token of type: T_INT or T_DOUBLE
+     * Tries to build a number, both int and double are supported.
+     * If possible, assigns newly created token to currToken.
+     * @return                          If a numerical token can be created
      * @throws IOException              on BufferedReader error
      * @throws InvalidTokenException    on too long token
      */
-    public Token buildNumber() throws IOException, InvalidTokenException {
+    public boolean tryBuildIntOrDouble() throws IOException, InvalidTokenException {
+        if (!Character.isDigit(currChar))
+            return false;
         Position firstPos = new Position(currPos.rowNo, currPos.colNo);
-        String number = "";
+        int number = 0;
         if (currChar=='0') {
-            number+=currChar;
+            number+=Character.getNumericValue(currChar);
             // omit any additional leading zero's
             while (currChar == '0')
                 nextChar();
         }
-        number+=buildStringNumber(firstPos);
+        ImmutablePair<Integer, Integer> pair = buildNumber(firstPos);
+        number+=pair.left;
         if (currChar == '.'){
-            number+=currChar;
             nextChar();
-            number+=buildStringNumber(firstPos);
-            return new TokenDouble(TokenType.T_DOUBLE, firstPos, Double.parseDouble(number));
+            ImmutablePair<Integer, Integer> pair1 = buildNumber(firstPos);
+            double numberD = (double)number + pair1.left/Math.pow(10, pair1.right);
+            currToken = new TokenDouble(TokenType.T_DOUBLE, firstPos, numberD);
         }
-        if (number.length() > MAX_INT_PRECISION)
-            return new TokenDouble(TokenType.T_DOUBLE, firstPos, Double.parseDouble(number));
-        return new TokenInt(TokenType.T_INT, firstPos, Integer.valueOf(number));
+        else if (pair.right > MAX_INT_PRECISION)
+            currToken =  new TokenDouble(TokenType.T_DOUBLE, firstPos, number);
+        else
+            currToken =  new TokenInt(TokenType.T_INT, firstPos, number);
+        return true;
     }
 
     /**
@@ -179,13 +193,13 @@ public class Lexer {
      * @throws IOException              on BufferedReader error
      * @throws InvalidTokenException    on too long token
      */
-    public Token buildNumOrIdentifier() throws IOException, InvalidTokenException {
-        Token newToken;
-        if (Character.isLetter(currChar))
-            newToken = buildIdentifier();
+    public boolean buildNumOrIdentifier() throws IOException, InvalidTokenException {
+        if (!Character.isLetterOrDigit(currChar))
+            return false;
+        if (tryBuildIntOrDouble() || tryBuildIdentifier())
+            return true;
         else
-            newToken = buildNumber();
-        return newToken;
+            return false;
     }
 
     /**
@@ -201,7 +215,7 @@ public class Lexer {
         int commentLen = 0;
         Position firstPos = new Position(currPos.rowNo, currPos.colNo);
         StringBuilder builder = new StringBuilder();
-        while (running && currChar != '\n' && commentLen<=MAX_LENGTH){ //wszystkie znaki konca linii
+        while (running && currChar != '\n' && commentLen<=MAX_LENGTH){ //TODO: wszystkie znaki konca linii
             commentLen++;
             builder.append(currChar);
             nextCharCommText();
@@ -210,7 +224,6 @@ public class Lexer {
             throw new InvalidTokenException(firstPos, builder.toString(), MAX_LENGTH);
         if (currChar == '\n')
             nextChar();
-        String comment = builder.toString();
         return new Token(TokenType.T_COMMENT, firstPos);
     }
 
@@ -257,8 +270,8 @@ public class Lexer {
         Token newToken;
         if (!running)
             return new Token(TokenType.T_EOF, new Position(currPos.rowNo, currPos.colNo));
-        if (Character.isLetterOrDigit(currChar))
-            newToken = buildNumOrIdentifier();
+        if (buildNumOrIdentifier())
+            newToken = currToken;
         else if (currChar=='#')
             newToken = buildComment();
         else if (currChar=='\"')
