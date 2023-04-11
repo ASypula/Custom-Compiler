@@ -1,4 +1,4 @@
-package tkom.common;
+package tkom.common.tokens;
 
 import java.util.HashMap;
 

@@ -1,19 +1,18 @@
-package tkom.common;
+package tkom.common.tokens;
+
+import tkom.common.Position;
 
 public class Token {
     TokenType type;
-    String value;
     Position startPos;
 
     /**
      * Token for Lexer
      * @param t     type of the token
-     * @param val   actual string-text of the token
      * @param pos   position of first character in the text of the token
      */
-    public Token(TokenType t, String val, Position pos){
+    public Token(TokenType t, Position pos){
         type = t;
-        value = val;
         startPos = pos;
     }
 
@@ -23,12 +22,8 @@ public class Token {
     public String getTypeString(){
         return type.toString();
     }
-
-    public String getValue() {
-        return value;
-    }
-
     public Position getPosition(){
         return startPos;
     }
 }
+

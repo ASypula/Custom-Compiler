@@ -1,15 +1,14 @@
 package tkom.lexer;
 
 import tkom.common.Position;
-import tkom.common.Token;
-import tkom.common.TokenType;
+import tkom.common.tokens.*;
 import tkom.exception.InvalidTokenException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import static tkom.common.TokenMap.T_KEYWORDS;
-import static tkom.common.TokenMap.T_SIGNS;
+import static tkom.common.tokens.TokenMap.T_KEYWORDS;
+import static tkom.common.tokens.TokenMap.T_SIGNS;
 
 public class Lexer {
     boolean running;    // set to true as long as EOF is not encountered
@@ -89,7 +88,7 @@ public class Lexer {
         // First check for a two-character sign
         if (T_SIGNS.containsKey(builder.toString())){
             String newString = builder.toString();
-            newToken = new Token(T_SIGNS.get(newString), newString, firstPos);
+            newToken = new Token(T_SIGNS.get(newString), firstPos);
             nextChar();
         }
         // Next check for a single character sign
@@ -97,7 +96,7 @@ public class Lexer {
             builder.deleteCharAt(builder.length() - 1);
             String newString = builder.toString();
             if (T_SIGNS.containsKey(newString))
-                newToken = new Token(T_SIGNS.get(newString), newString, firstPos);
+                newToken = new Token(T_SIGNS.get(newString), firstPos);
             else
                 throw new InvalidTokenException(firstPos, newString);
         }
@@ -119,7 +118,10 @@ public class Lexer {
             nextChar();
         }
         String newString = builder.toString();
-        return new Token(T_KEYWORDS.getOrDefault(newString, TokenType.T_IDENT), newString, firstPos);
+        if (T_KEYWORDS.containsKey(newString))
+            return new Token(T_KEYWORDS.get(newString), firstPos);
+        else
+            return new TokenString(TokenType.T_IDENT, firstPos, newString);
     }
 
     /**
@@ -164,11 +166,11 @@ public class Lexer {
             number+=currChar;
             nextChar();
             number+=buildStringNumber(firstPos);
-            return new Token(TokenType.T_DOUBLE, number, firstPos);
+            return new TokenDouble(TokenType.T_DOUBLE, firstPos, Double.parseDouble(number));
         }
         if (number.length() > MAX_INT_PRECISION)
-            return new Token(TokenType.T_DOUBLE, number, firstPos);
-        return new Token(TokenType.T_INT, number, firstPos);
+            return new TokenDouble(TokenType.T_DOUBLE, firstPos, Double.parseDouble(number));
+        return new TokenInt(TokenType.T_INT, firstPos, Integer.valueOf(number));
     }
 
     /**
@@ -199,7 +201,7 @@ public class Lexer {
         int commentLen = 0;
         Position firstPos = new Position(currPos.rowNo, currPos.colNo);
         StringBuilder builder = new StringBuilder();
-        while (running && currChar != '\n' && commentLen<=MAX_LENGTH){
+        while (running && currChar != '\n' && commentLen<=MAX_LENGTH){ //wszystkie znaki konca linii
             commentLen++;
             builder.append(currChar);
             nextCharCommText();
@@ -209,7 +211,7 @@ public class Lexer {
         if (currChar == '\n')
             nextChar();
         String comment = builder.toString();
-        return new Token(TokenType.T_COMMENT, comment, firstPos);
+        return new Token(TokenType.T_COMMENT, firstPos);
     }
 
     /**
@@ -241,7 +243,7 @@ public class Lexer {
             throw new InvalidTokenException(firstPos, builder.toString(), MAX_LENGTH);
         if (currChar == '\"') {
             nextChar();
-            return new Token(TokenType.T_STRING, builder.toString(), firstPos);
+            return new TokenString(TokenType.T_STRING, firstPos, builder.toString());
         }
         else
             throw new InvalidTokenException(firstPos, builder.toString());
@@ -254,7 +256,7 @@ public class Lexer {
     public Token getToken() throws IOException, InvalidTokenException {
         Token newToken;
         if (!running)
-            return new Token(TokenType.T_EOF, "EOF", new Position(currPos.rowNo, currPos.colNo));
+            return new Token(TokenType.T_EOF, new Position(currPos.rowNo, currPos.colNo));
         if (Character.isLetterOrDigit(currChar))
             newToken = buildNumOrIdentifier();
         else if (currChar=='#')
