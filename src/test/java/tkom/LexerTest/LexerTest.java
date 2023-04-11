@@ -3,8 +3,6 @@ package tkom.LexerTest;
 import org.junit.Test;
 import tkom.common.Position;
 import tkom.common.tokens.Token;
-import tkom.common.tokens.TokenInt;
-import tkom.common.tokens.TokenString;
 import tkom.common.tokens.TokenType;
 import tkom.exception.InvalidTokenException;
 import tkom.lexer.Lexer;
@@ -407,81 +405,87 @@ public class LexerTest {
         assertEquals(x, t.getStringValue());
     }
 
-//    @Test
-//    public void test_T_STRING_withNewline() throws IOException, InvalidTokenException {
-//        Token tokenExp=new Token(TokenType.T_STRING, "Hello\nt", new Position(0,0));
-//        String x = "\"Hello\nt\"";
-//        initLexer(x);
-//        Token t = myLexer.getToken();
-//        assertToken(tokenExp, t);
-//    }
-//
-//    @Test
-//    public void test_T_STRING_withEscapeChar() throws IOException, InvalidTokenException {
-//        Token tokenExp=new Token(TokenType.T_STRING, "\"name\"", new Position(0,0));
-//        String x = "\"\\\"name\\\"\"";
-//        initLexer(x);
-//        Token t = myLexer.getToken();
-//        assertToken(tokenExp, t);
-//    }
-//    @Test
-//    public void test_T_STRING_withSlashChar() throws IOException, InvalidTokenException {
-//        Token tokenExp=new Token(TokenType.T_STRING, "\\name", new Position(0,0));
-//        String x = "\"\\name\"";
-//        initLexer(x);
-//        Token t = myLexer.getToken();
-//        assertToken(tokenExp, t);
-//    }
-//
-//    @Test
-//    public void testException_unknownChar() throws IOException {
-//        Position pos = new Position(0,0);
-//        String x = "%";
-//        initLexer(x);
-//        Exception exception = assertThrows(InvalidTokenException.class, () -> myLexer.getToken());
-//        String expectedMessage = "Invalid token " + x + " at the position: " + pos;
-//        String actualMessage = exception.getMessage();
-//        assertTrue(actualMessage.contains(expectedMessage));
-//    }
-//
-//    @Test
-//    public void testException_tooLongComment() throws IOException {
-//        Position pos = new Position(0,0);
-//        int size = 210;
-//        char[] longArray = new char[size];
-//        for (int i=0; i<size; i++)
-//            longArray[i] = 'x';
-//        String x = "#" + Arrays.toString(longArray);
-//        initLexer(x);
-//        assertThrows(InvalidTokenException.class, () -> myLexer.getToken());
-//    }
-//
-//    @Test
-//    public void test_Sequence1() throws IOException, InvalidTokenException {
-//        ArrayList<Token> expectedTokens = new ArrayList<Token>();
-//        expectedTokens.add(new Token(TokenType.T_WHILE, new Position(0,0)));
-//        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_L, new Position(5,0)));
-//        expectedTokens.add(new Token(TokenType.T_IDENT, new Position(6,0)));
-//        expectedTokens.add(new Token(TokenType.T_LESS, new Position(7,0)));
-//        expectedTokens.add(new Token(TokenType.T_INT, new Position(8,0)));
-//        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_R, new Position(10,0)));
-//        expectedTokens.add(new Token(TokenType.T_PRINT, new Position(0,1)));
-//        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_L, new Position(5,1)));
-//        expectedTokens.add(new Token(TokenType.T_STRING, new Position(6,1)));
-//        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_R, new Position(13,1)));
-//        expectedTokens.add(new Token(TokenType.T_SEMICOLON, new Position(14,1)));
-//        String x = "while   (i < 20)\n print(\"Hello\");";
-//        ArrayList<Token> returnedTokens = new ArrayList<Token>();
-//        initLexer(x);
-//        while (myLexer.isRunning()) {
-//            Token newToken = myLexer.getToken();
-//            returnedTokens.add(newToken);
-//        }
-//        for (int i = 0; i<returnedTokens.size(); i++)
-//            assertToken(expectedTokens.get(i), returnedTokens.get(i));
-//        Token newToken = myLexer.getToken();
-//        assertToken(newToken, new Token(TokenType.T_EOF, new Position(15,1)));
-//    }
-//
+    @Test
+    public void test_T_STRING_withNewline() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_STRING, new Position(0,0));
+        String x = "\"Hello\nt\"";
+        String w = "Hello\nt";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+        assertEquals(w, t.getStringValue());
+    }
+
+    @Test
+    public void test_T_STRING_withEscapeChar() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_STRING, new Position(0,0));
+        String x = "\"\\\"name\\\"\"";
+        String w = "\"name\"";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+        assertEquals(w, t.getStringValue());
+    }
+    @Test
+    public void test_T_STRING_withSlashChar() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_STRING, new Position(0,0));
+        String x = "\"\\name\"";
+        String w = "\\name";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+        assertEquals(w, t.getStringValue());
+    }
+
+    @Test
+    public void testException_unknownChar() throws IOException {
+        Position pos = new Position(0,0);
+        String x = "%";
+        initLexer(x);
+        Exception exception = assertThrows(InvalidTokenException.class, () -> myLexer.getToken());
+        String expectedMessage = "Invalid token " + x + " at the position: " + pos;
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void testException_tooLongComment() throws IOException {
+        Position pos = new Position(0,0);
+        int size = 210;
+        char[] longArray = new char[size];
+        for (int i=0; i<size; i++)
+            longArray[i] = 'x';
+        String x = "#" + Arrays.toString(longArray);
+        initLexer(x);
+        assertThrows(InvalidTokenException.class, () -> myLexer.getToken());
+    }
+
+    @Test
+    public void test_Sequence1() throws IOException, InvalidTokenException {
+        ArrayList<Token> expectedTokens = new ArrayList<Token>();
+        expectedTokens.add(new Token(TokenType.T_WHILE, new Position(0,0)));
+        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_L, new Position(5,0)));
+        expectedTokens.add(new Token(TokenType.T_IDENT, new Position(6,0)));
+        expectedTokens.add(new Token(TokenType.T_LESS, new Position(7,0)));
+        expectedTokens.add(new Token(TokenType.T_INT, new Position(8,0)));
+        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_R, new Position(10,0)));
+        expectedTokens.add(new Token(TokenType.T_PRINT, new Position(0,1)));
+        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_L, new Position(5,1)));
+        expectedTokens.add(new Token(TokenType.T_STRING, new Position(6,1)));
+        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_R, new Position(13,1)));
+        expectedTokens.add(new Token(TokenType.T_SEMICOLON, new Position(14,1)));
+        String x = "while   (i < 20)\n print(\"Hello\");";
+        ArrayList<Token> returnedTokens = new ArrayList<Token>();
+        initLexer(x);
+        while (myLexer.isRunning()) {
+            Token newToken = myLexer.getToken();
+            returnedTokens.add(newToken);
+        }
+        for (int i = 0; i<returnedTokens.size(); i++)
+            assertToken(expectedTokens.get(i), returnedTokens.get(i));
+        Token newToken = myLexer.getToken();
+        assertToken(newToken, new Token(TokenType.T_EOF, new Position(15,1)));
+    }
+
 
 }

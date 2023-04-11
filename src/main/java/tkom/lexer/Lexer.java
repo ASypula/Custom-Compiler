@@ -1,7 +1,6 @@
 package tkom.lexer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import tkom.common.Position;
 import tkom.common.tokens.*;
 import tkom.exception.InvalidTokenException;
@@ -82,9 +81,8 @@ public class Lexer {
      * @throws IOException              on BufferedReader error
      * @throws InvalidTokenException    on invalid token
      */
-    public Token buildSign() throws IOException, InvalidTokenException {
+    public boolean tryBuildSign() throws IOException, InvalidTokenException {
         Position firstPos = new Position(currPos.rowNo, currPos.colNo);
-        Token newToken;
         StringBuilder builder = new StringBuilder();
         builder.append(currChar);
         nextChar();
@@ -92,7 +90,7 @@ public class Lexer {
         // First check for a two-character sign
         if (T_SIGNS.containsKey(builder.toString())){
             String newString = builder.toString();
-            newToken = new Token(T_SIGNS.get(newString), firstPos);
+            currToken = new Token(T_SIGNS.get(newString), firstPos);
             nextChar();
         }
         // Next check for a single character sign
@@ -100,11 +98,11 @@ public class Lexer {
             builder.deleteCharAt(builder.length() - 1);
             String newString = builder.toString();
             if (T_SIGNS.containsKey(newString))
-                newToken = new Token(T_SIGNS.get(newString), firstPos);
+                currToken = new Token(T_SIGNS.get(newString), firstPos);
             else
                 throw new InvalidTokenException(firstPos, newString);
         }
-        return newToken;
+        return true;
     }
 
     /**
@@ -193,13 +191,10 @@ public class Lexer {
      * @throws IOException              on BufferedReader error
      * @throws InvalidTokenException    on too long token
      */
-    public boolean buildNumOrIdentifier() throws IOException, InvalidTokenException {
+    public boolean tryBuildNumOrIdentifier() throws IOException, InvalidTokenException {
         if (!Character.isLetterOrDigit(currChar))
             return false;
-        if (tryBuildIntOrDouble() || tryBuildIdentifier())
-            return true;
-        else
-            return false;
+        return tryBuildIntOrDouble() || tryBuildIdentifier();
     }
 
     /**
@@ -207,11 +202,13 @@ public class Lexer {
      * Maximum possible length of comment is MAX_LENGTH.
      * Next input characters are obtained differently as newline character should not be omitted
      * as it ends the comment.
-     * @return                          new Token with type T_COMMENT
+     * @return                          If Token with type T_COMMENT can be created
      * @throws IOException              on BufferedReader error
      * @throws InvalidTokenException    on too long token
      */
-    public Token buildComment() throws IOException, InvalidTokenException {
+    public boolean tryBuildComment() throws IOException, InvalidTokenException {
+        if (!(currChar =='#'))
+            return false;
         int commentLen = 0;
         Position firstPos = new Position(currPos.rowNo, currPos.colNo);
         StringBuilder builder = new StringBuilder();
@@ -224,7 +221,8 @@ public class Lexer {
             throw new InvalidTokenException(firstPos, builder.toString(), MAX_LENGTH);
         if (currChar == '\n')
             nextChar();
-        return new Token(TokenType.T_COMMENT, firstPos);
+        currToken = new Token(TokenType.T_COMMENT, firstPos);
+        return true;
     }
 
     /**
@@ -232,11 +230,13 @@ public class Lexer {
      * Maximum possible length of text is MAX_LENGTH.
      * Next input characters are obtained differently as escape characters need to be handled
      * and characters as tab should be included in the resulting string.
-     * @return                          new Token with type T_STRING
+     * @return                          If new Token with type T_STRING can be created
      * @throws IOException              on BufferedReader error
      * @throws InvalidTokenException    on too long token
      */
-    public Token buildString() throws IOException, InvalidTokenException {
+    public boolean tryBuildString() throws IOException, InvalidTokenException {
+        if (!(currChar=='\"'))
+            return false;
         int stringLen = 0;
         Position firstPos = new Position(currPos.rowNo, currPos.colNo);
         StringBuilder builder = new StringBuilder();
@@ -256,7 +256,8 @@ public class Lexer {
             throw new InvalidTokenException(firstPos, builder.toString(), MAX_LENGTH);
         if (currChar == '\"') {
             nextChar();
-            return new TokenString(TokenType.T_STRING, firstPos, builder.toString());
+            currToken = new TokenString(TokenType.T_STRING, firstPos, builder.toString());
+            return true;
         }
         else
             throw new InvalidTokenException(firstPos, builder.toString());
@@ -267,18 +268,12 @@ public class Lexer {
      * appropriate tokens.
      */
     public Token getToken() throws IOException, InvalidTokenException {
-        Token newToken;
         if (!running)
             return new Token(TokenType.T_EOF, new Position(currPos.rowNo, currPos.colNo));
-        if (buildNumOrIdentifier())
-            newToken = currToken;
-        else if (currChar=='#')
-            newToken = buildComment();
-        else if (currChar=='\"')
-            newToken = buildString();
+        if (tryBuildNumOrIdentifier() || tryBuildComment() || tryBuildString() || tryBuildSign())
+            return currToken;
         else
-            newToken = buildSign();
-        return newToken;
+            throw new InvalidTokenException(currPos, "Something went wrong");
     }
 
     public boolean isRunning(){
