@@ -1,6 +1,7 @@
 package tkom.lexer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import tkom.common.BuffReader;
 import tkom.common.Position;
 import tkom.common.tokens.*;
 import tkom.exception.InvalidTokenException;
@@ -13,11 +14,10 @@ import static tkom.common.tokens.TokenMap.T_SIGNS;
 
 public class Lexer {
     boolean running;    // set to true as long as EOF is not encountered
-    BufferedReader br;
+    BuffReader br;
 
     Token currToken;
     char currChar;
-    Position currPos;
 
     static final int MAX_LENGTH = 200; // maximum number of chars available in a string or a comment
     static final int MAX_INT_PRECISION = 9;
@@ -30,8 +30,7 @@ public class Lexer {
      * @throws IOException      on BufferedReader error
      */
     public Lexer(BufferedReader buffRead) throws IOException {
-        br = buffRead;
-        currPos = new Position(-1, 0);
+        br = new BuffReader(buffRead, new Position(-1, 0));
         running = true;
         nextChar();
     }
@@ -44,11 +43,11 @@ public class Lexer {
      */
     public void nextChar() throws IOException {
         int currInt=br.read();
-        currPos.rowNo++;
+        br.currPos.rowNo++;
         while (currInt != -1 && Character.isWhitespace((char)currInt)){
             if ((char)currInt == '\n') {
-                currPos.rowNo = 0;
-                currPos.colNo++;
+                br.currPos.rowNo = 0;
+                br.currPos.colNo++;
             }
             currInt=br.read();
         }
@@ -65,12 +64,12 @@ public class Lexer {
      */
     public void nextCharCommText() throws IOException {
         int currInt=br.read();
-        currPos.rowNo++;
+        br.currPos.rowNo++;
         if (currInt == -1)
             running = false;
         else if ((char)currInt == '\n'){
-            currPos.rowNo = 0;
-            currPos.colNo++;
+            br.currPos.rowNo = 0;
+            br.currPos.colNo++;
         }
         currChar = (char)currInt;
     }
@@ -82,7 +81,7 @@ public class Lexer {
      * @throws InvalidTokenException    on invalid token
      */
     public boolean tryBuildSign() throws IOException, InvalidTokenException {
-        Position firstPos = new Position(currPos.rowNo, currPos.colNo);
+        Position firstPos = new Position(br.currPos.rowNo, br.currPos.colNo);
         StringBuilder builder = new StringBuilder();
         builder.append(currChar);
         nextChar();
@@ -109,18 +108,23 @@ public class Lexer {
      * Builds an identifier: either user's custom defined variable
      * or a language keyword e.g. 'if'
      * @throws IOException              on BufferedReader error
+     * @throws InvalidTokenException    on too long token
      */
-    public boolean tryBuildIdentifier() throws IOException {
+    public boolean tryBuildIdentifier() throws IOException, InvalidTokenException {
         if (!Character.isLetter(currChar))
             return false;
-        Position firstPos = new Position(currPos.rowNo, currPos.colNo);
+        int identLen = 0;
+        Position firstPos = new Position(br.currPos.rowNo, br.currPos.colNo);
         StringBuilder builder = new StringBuilder();
         builder.append(currChar);
         nextChar();
-        while (running && Character.isLetterOrDigit(currChar) || currChar == '_'){
+        while (running && (Character.isLetterOrDigit(currChar) || currChar == '_') && identLen<=MAX_LENGTH){
+            identLen++;
             builder.append(currChar);
             nextChar();
         }
+        if (identLen > MAX_LENGTH)
+            throw new InvalidTokenException(firstPos, builder.toString(), MAX_LENGTH);
         String newString = builder.toString();
         if (T_KEYWORDS.containsKey(newString))
             currToken = new Token(T_KEYWORDS.get(newString), firstPos);
@@ -162,7 +166,7 @@ public class Lexer {
     public boolean tryBuildIntOrDouble() throws IOException, InvalidTokenException {
         if (!Character.isDigit(currChar))
             return false;
-        Position firstPos = new Position(currPos.rowNo, currPos.colNo);
+        Position firstPos = new Position(br.currPos.rowNo, br.currPos.colNo);
         int number = 0;
         if (currChar=='0') {
             number+=Character.getNumericValue(currChar);
@@ -210,7 +214,7 @@ public class Lexer {
         if (!(currChar =='#'))
             return false;
         int commentLen = 0;
-        Position firstPos = new Position(currPos.rowNo, currPos.colNo);
+        Position firstPos = new Position(br.currPos.rowNo, br.currPos.colNo);
         StringBuilder builder = new StringBuilder();
         while (running && currChar != '\n' && commentLen<=MAX_LENGTH){ //TODO: wszystkie znaki konca linii
             commentLen++;
@@ -238,7 +242,7 @@ public class Lexer {
         if (!(currChar=='\"'))
             return false;
         int stringLen = 0;
-        Position firstPos = new Position(currPos.rowNo, currPos.colNo);
+        Position firstPos = new Position(br.currPos.rowNo, br.currPos.colNo);
         StringBuilder builder = new StringBuilder();
         nextCharCommText();
         while (running && currChar != '\"' && stringLen<=MAX_LENGTH){
@@ -269,11 +273,11 @@ public class Lexer {
      */
     public Token getToken() throws IOException, InvalidTokenException {
         if (!running)
-            return new Token(TokenType.T_EOF, new Position(currPos.rowNo, currPos.colNo));
+            return new Token(TokenType.T_EOF, new Position(br.currPos.rowNo, br.currPos.colNo));
         if (tryBuildNumOrIdentifier() || tryBuildComment() || tryBuildString() || tryBuildSign())
             return currToken;
         else
-            throw new InvalidTokenException(currPos, "Something went wrong");
+            throw new InvalidTokenException(br.currPos, "Something went wrong");
     }
 
     public boolean isRunning(){
