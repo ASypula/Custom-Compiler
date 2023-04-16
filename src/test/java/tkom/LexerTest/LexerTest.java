@@ -111,7 +111,7 @@ public class LexerTest {
         initLexer(x);
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
-        assertTrue(Math.abs(t.getDoubleValue() - Double.valueOf(x)) < epsilon);
+        assertTrue(Math.abs(t.getDoubleValue() - Double.parseDouble(x)) < epsilon);
     }
 
     @Test
@@ -121,7 +121,7 @@ public class LexerTest {
         initLexer(x);
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
-        assertTrue(Math.abs(t.getDoubleValue() - Double.valueOf(x)) < epsilon);
+        assertTrue(Math.abs(t.getDoubleValue() - Double.parseDouble(x)) < epsilon);
     }
 
     @Test
@@ -131,7 +131,7 @@ public class LexerTest {
         initLexer(x);
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
-        assertTrue(Math.abs(t.getDoubleValue() - Double.valueOf(x)) < epsilon);
+        assertTrue(Math.abs(t.getDoubleValue() - Double.parseDouble(x)) < epsilon);
     }
 
     @Test
@@ -141,7 +141,7 @@ public class LexerTest {
         initLexer(x);
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
-        assertTrue(Math.abs(t.getDoubleValue() - Double.valueOf(x)) < epsilon);
+        assertTrue(Math.abs(t.getDoubleValue() - Double.parseDouble(x)) < epsilon);
     }
 
     @Test
@@ -242,7 +242,7 @@ public class LexerTest {
         initLexer(x);
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
-        assertEquals((int)Integer.valueOf(x), t.getIntValue());
+        assertEquals(Integer.parseInt(x), t.getIntValue());
     }
 
     @Test
@@ -454,7 +454,7 @@ public class LexerTest {
         Position pos = new Position(0,0);
         String x = "%";
         initLexer(x);
-        Token t = myLexer.getToken();
+        myLexer.getToken();
         Exception exception = myLexer.excHandler.get(0);
         String expectedMessage = "Invalid token " + x + " at the position: " + pos;
         String actualMessage = exception.getMessage();
@@ -463,7 +463,6 @@ public class LexerTest {
 
     @Test
     public void testException_tooLongComment() throws IOException {
-        Position pos = new Position(0,0);
         int size = 210;
         char[] longArray = new char[size];
         for (int i=0; i<size; i++)
@@ -475,7 +474,7 @@ public class LexerTest {
 
     @Test
     public void test_Sequence1() throws IOException, InvalidTokenException {
-        ArrayList<Token> expectedTokens = new ArrayList<Token>();
+        ArrayList<Token> expectedTokens = new ArrayList<>();
         expectedTokens.add(new Token(TokenType.T_WHILE, new Position(0,0)));
         expectedTokens.add(new Token(TokenType.T_REG_BRACKET_L, new Position(5,0)));
         expectedTokens.add(new Token(TokenType.T_IDENT, new Position(6,0)));
@@ -488,7 +487,7 @@ public class LexerTest {
         expectedTokens.add(new Token(TokenType.T_REG_BRACKET_R, new Position(13,1)));
         expectedTokens.add(new Token(TokenType.T_SEMICOLON, new Position(14,1)));
         String x = "while   (i < 20)\n print(\"Hello\");";
-        ArrayList<Token> returnedTokens = new ArrayList<Token>();
+        ArrayList<Token> returnedTokens = new ArrayList<>();
         initLexer(x);
         while (myLexer.isRunning()) {
             Token newToken = myLexer.getToken();
