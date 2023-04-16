@@ -1,5 +1,6 @@
 package tkom;
 
+import tkom.common.ExceptionHandler;
 import tkom.common.Position;
 import tkom.common.tokens.Token;
 import tkom.common.tokens.TokenInt;
@@ -9,18 +10,22 @@ import tkom.lexer.Lexer;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.ListIterator;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 public class Main
 {
     public static void main( String[] args ) throws IOException, InvalidTokenException {
         String filename = "src/main/java/tkom/test.txt";
+        ExceptionHandler excHandler = new ExceptionHandler();
         if (args.length == 1)
             filename = "src/main/java/tkom/" + args[0];
         FileReader fr=new FileReader(filename);
         BufferedReader br=new BufferedReader(fr);
-        Lexer myLexer = new Lexer(br);
+        Lexer myLexer = new Lexer(br, excHandler);
         ArrayList<Token> tokenArray = new ArrayList<>();
         Token newToken = myLexer.getToken();
         tokenArray.add(newToken);

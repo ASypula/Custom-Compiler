@@ -1,6 +1,7 @@
 package tkom.LexerTest;
 
 import org.junit.Test;
+import tkom.common.ExceptionHandler;
 import tkom.common.Position;
 import tkom.common.tokens.Token;
 import tkom.common.tokens.TokenType;
@@ -22,7 +23,8 @@ public class LexerTest {
         InputStream initialStream = new ByteArrayInputStream(input.getBytes());
         Reader targetReader = new InputStreamReader(initialStream);
         BufferedReader br = new BufferedReader(targetReader);
-        myLexer = new Lexer(br);
+        ExceptionHandler excHandler = new ExceptionHandler();
+        myLexer = new Lexer(br, excHandler);
     }
 
     private void assertToken(Token expected, Token tested) {
@@ -126,6 +128,16 @@ public class LexerTest {
     public void test_T_DOUBLE_withMultiple0() throws IOException, InvalidTokenException {
         Token tokenExp=new Token(TokenType.T_DOUBLE, new Position(0,0));
         String x = "000.095";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+        assertTrue(Math.abs(t.getDoubleValue() - Double.valueOf(x)) < epsilon);
+    }
+
+    @Test
+    public void test_T_DOUBLE_withDot() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_DOUBLE, new Position(0,0));
+        String x = "12.";
         initLexer(x);
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
@@ -376,15 +388,15 @@ public class LexerTest {
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
     }
-//
-//    @Test
-//    public void test_T_STRING() throws IOException, InvalidTokenException {
-//        Token tokenExp=new Token(TokenType.T_STRING, "Hello", new Position(0,0));
-//        String x = "\"Hello\"";
-//        initLexer(x);
-//        Token t = myLexer.getToken();
-//        assertToken(tokenExp, t);
-//    }
+
+    @Test
+    public void test_T_STRING() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_STRING, new Position(0,0));
+        String x = "\"Hello\"";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+    }
 
     @Test
     public void test_T_WHILE() throws IOException, InvalidTokenException {
@@ -438,11 +450,12 @@ public class LexerTest {
     }
 
     @Test
-    public void testException_unknownChar() throws IOException {
+    public void testException_unknownChar() throws Exception {
         Position pos = new Position(0,0);
         String x = "%";
         initLexer(x);
-        Exception exception = assertThrows(InvalidTokenException.class, () -> myLexer.getToken());
+        Token t = myLexer.getToken();
+        Exception exception = myLexer.excHandler.get(0);
         String expectedMessage = "Invalid token " + x + " at the position: " + pos;
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));

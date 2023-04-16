@@ -2,6 +2,7 @@ package tkom.lexer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import tkom.common.BuffReader;
+import tkom.common.ExceptionHandler;
 import tkom.common.Position;
 import tkom.common.tokens.*;
 import tkom.exception.InvalidTokenException;
@@ -14,14 +15,12 @@ import java.util.List;
 import static tkom.common.tokens.TokenMap.T_KEYWORDS;
 import static tkom.common.tokens.TokenMap.T_SIGNS;
 
-//TODO: not throw exceptions when e.g. a colon is placed instead of a semicolon, wait with such exceptions to parser to throw a more meaningful message
-//TODO: not go back/cofac sie when building a sign; use a different method
-//TODO: more corner case tests as e.g. number with nothing after a dot
 //TODO: later additional layer between lexer and parser to omit comments
 
 public class Lexer {
     boolean running;    // set to true as long as EOF is not encountered
     BuffReader br;
+    public ExceptionHandler excHandler;
 
     Token currToken;
     char currChar;
@@ -36,10 +35,12 @@ public class Lexer {
      * Lexer constructor
      * Already the first character from the input is obtained
      * @param buffRead          BufferedReader for the input either String or a file
+     * @param eh                ExceptionHandler for storing non-critical exceptions
      * @throws IOException      on BufferedReader error
      */
-    public Lexer(BufferedReader buffRead) throws IOException {
+    public Lexer(BufferedReader buffRead, ExceptionHandler eh) throws IOException {
         br = new BuffReader(buffRead, new Position(-1, 0));
+        excHandler = eh;
         running = true;
         nextChar();
     }
@@ -87,9 +88,9 @@ public class Lexer {
      * Tries building one of the single or double signs from input characters
      * Example tokens are: '<' T_LESS or '==' T_EQUALS
      * @throws IOException              on BufferedReader error
-     * @throws InvalidTokenException    on invalid token
+     * may throw InvalidTokenException  on invalid token
      */
-    public boolean tryBuildSign() throws IOException, InvalidTokenException {
+    public boolean tryBuildSign() throws IOException {
         Position firstPos = new Position(br.currPos.rowNo, br.currPos.colNo);
         StringBuilder builder = new StringBuilder();
         builder.append(currChar);
@@ -108,7 +109,7 @@ public class Lexer {
             if (T_SIGNS.containsKey(newString))
                 currToken = new Token(T_SIGNS.get(newString), firstPos);
             else
-                throw new InvalidTokenException(firstPos, newString);
+                excHandler.add(new InvalidTokenException(firstPos, newString));
         }
         return true;
     }
