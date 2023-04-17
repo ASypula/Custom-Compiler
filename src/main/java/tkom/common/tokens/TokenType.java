@@ -15,6 +15,7 @@ public enum TokenType {
     T_EQUALS,
     T_FIG_COLL,
     T_FIGURE,
+    T_FUNCTION,
     T_GREATER,
     T_GREATER_OR_EQ,
     T_IDENT,
