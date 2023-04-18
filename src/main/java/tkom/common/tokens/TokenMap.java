@@ -10,6 +10,7 @@ public class TokenMap {
     static {
         T_KEYWORDS = new HashMap<>();
         T_KEYWORDS.put("else", TokenType.T_ELSE);
+        T_KEYWORDS.put("false", TokenType.T_FALSE);
         T_KEYWORDS.put("Figure", TokenType.T_FIGURE);
         T_KEYWORDS.put("FigCollection", TokenType.T_FIG_COLL);
         T_KEYWORDS.put("if", TokenType.T_IF);
@@ -18,6 +19,7 @@ public class TokenMap {
         T_KEYWORDS.put("Point", TokenType.T_POINT);
         T_KEYWORDS.put("print", TokenType.T_PRINT);
         T_KEYWORDS.put("return", TokenType.T_RETURN);
+        T_KEYWORDS.put("true", TokenType.T_TRUE);
         T_KEYWORDS.put("while", TokenType.T_WHILE);
     }
 

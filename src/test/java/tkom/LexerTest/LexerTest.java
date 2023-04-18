@@ -154,6 +154,24 @@ public class LexerTest {
     }
 
     @Test
+    public void test_T_FALSE() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_FALSE, new Position(0,0));
+        String x = "false";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+    }
+
+    @Test
+    public void test_T_TRUE() throws IOException, InvalidTokenException {
+        Token tokenExp=new Token(TokenType.T_TRUE, new Position(0,0));
+        String x = "true";
+        initLexer(x);
+        Token t = myLexer.getToken();
+        assertToken(tokenExp, t);
+    }
+
+    @Test
     public void test_T_EOF() throws IOException, InvalidTokenException {
         Token tokenExp=new Token(TokenType.T_EOF, new Position(0,0));
         String x = "";

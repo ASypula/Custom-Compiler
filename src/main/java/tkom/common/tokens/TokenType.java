@@ -13,6 +13,7 @@ public enum TokenType {
     T_ELSE,
     T_EOF,
     T_EQUALS,
+    T_FALSE,
     T_FIG_COLL,
     T_FIGURE,
     T_GREATER,
@@ -37,5 +38,6 @@ public enum TokenType {
     T_RETURN,
     T_SEMICOLON,
     T_STRING,
+    T_TRUE,
     T_WHILE
 }
