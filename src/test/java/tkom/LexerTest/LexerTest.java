@@ -5,6 +5,7 @@ import tkom.common.ExceptionHandler;
 import tkom.common.Position;
 import tkom.common.tokens.Token;
 import tkom.common.tokens.TokenType;
+import tkom.exception.ExceededLimitsException;
 import tkom.exception.InvalidTokenException;
 import tkom.lexer.Lexer;
 
@@ -33,7 +34,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_AND() throws IOException, InvalidTokenException {
+    public void test_T_AND() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_AND, new Position(0,0));
         String x = "&&";
         initLexer(x);
@@ -42,7 +43,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_ASSIGN() throws IOException, InvalidTokenException {
+    public void test_T_ASSIGN() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_ASSIGN, new Position(0,0));
         String x = "=";
         initLexer(x);
@@ -51,7 +52,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_COLON() throws IOException, InvalidTokenException {
+    public void test_T_COLON() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_COLON, new Position(0,0));
         String x = ",";
         initLexer(x);
@@ -60,7 +61,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_COMMENT() throws IOException, InvalidTokenException {
+    public void test_T_COMMENT() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_COMMENT, new Position(0,0));
         String x = "# comment\n";
         initLexer(x);
@@ -69,7 +70,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_CURLY_BRACKET_L() throws IOException, InvalidTokenException {
+    public void test_T_CURLY_BRACKET_L() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_CURLY_BRACKET_L, new Position(0,0));
         String x = "{";
         initLexer(x);
@@ -78,7 +79,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_CURLY_BRACKET_R() throws IOException, InvalidTokenException {
+    public void test_T_CURLY_BRACKET_R() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_CURLY_BRACKET_R, new Position(0,0));
         String x = "}";
         initLexer(x);
@@ -87,7 +88,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_DIV() throws IOException, InvalidTokenException {
+    public void test_T_DIV() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_DIV, new Position(0,0));
         String x = "/";
         initLexer(x);
@@ -96,7 +97,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_DOT() throws IOException, InvalidTokenException {
+    public void test_T_DOT() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_DOT, new Position(0,0));
         String x = ".";
         initLexer(x);
@@ -105,7 +106,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_DOUBLE() throws IOException, InvalidTokenException {
+    public void test_T_DOUBLE() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_DOUBLE, new Position(0,0));
         String x = "12.956";
         initLexer(x);
@@ -115,7 +116,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_DOUBLE_with0() throws IOException, InvalidTokenException {
+    public void test_T_DOUBLE_with0() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_DOUBLE, new Position(0,0));
         String x = "0.95";
         initLexer(x);
@@ -125,7 +126,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_DOUBLE_withMultiple0() throws IOException, InvalidTokenException {
+    public void test_T_DOUBLE_withMultiple0() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_DOUBLE, new Position(0,0));
         String x = "000.095";
         initLexer(x);
@@ -135,7 +136,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_DOUBLE_withDot() throws IOException, InvalidTokenException {
+    public void test_T_DOUBLE_withDot() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_DOUBLE, new Position(0,0));
         String x = "12.";
         initLexer(x);
@@ -145,7 +146,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_ELSE() throws IOException, InvalidTokenException {
+    public void test_T_ELSE() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_ELSE, new Position(0,0));
         String x = "else";
         initLexer(x);
@@ -154,7 +155,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_FALSE() throws IOException, InvalidTokenException {
+    public void test_T_FALSE() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_FALSE, new Position(0,0));
         String x = "false";
         initLexer(x);
@@ -163,7 +164,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_TRUE() throws IOException, InvalidTokenException {
+    public void test_T_TRUE() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_TRUE, new Position(0,0));
         String x = "true";
         initLexer(x);
@@ -172,7 +173,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_EOF() throws IOException, InvalidTokenException {
+    public void test_T_EOF() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_EOF, new Position(0,0));
         String x = "";
         initLexer(x);
@@ -181,7 +182,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_EQUALS() throws IOException, InvalidTokenException {
+    public void test_T_EQUALS() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_EQUALS, new Position(0,0));
         String x = "==";
         initLexer(x);
@@ -190,7 +191,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_FIG_COLL() throws IOException, InvalidTokenException {
+    public void test_T_FIG_COLL() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_FIG_COLL, new Position(0,0));
         String x = "FigCollection";
         initLexer(x);
@@ -199,7 +200,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_FIGURE() throws IOException, InvalidTokenException {
+    public void test_T_FIGURE() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_FIGURE, new Position(0,0));
         String x = "Figure";
         initLexer(x);
@@ -208,7 +209,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_GREATER() throws IOException, InvalidTokenException {
+    public void test_T_GREATER() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_GREATER, new Position(0,0));
         String x = ">";
         initLexer(x);
@@ -217,7 +218,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_GREATER_OR_EQ() throws IOException, InvalidTokenException {
+    public void test_T_GREATER_OR_EQ() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_GREATER_OR_EQ, new Position(0,0));
         String x = ">=";
         initLexer(x);
@@ -226,7 +227,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_IDENT1() throws IOException, InvalidTokenException {
+    public void test_T_IDENT1() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_IDENT, new Position(0,0));
         String x = "value1";
         initLexer(x);
@@ -236,7 +237,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_IDENT2() throws IOException, InvalidTokenException {
+    public void test_T_IDENT2() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_IDENT, new Position(0,0));
         String x = "value_if2";
         initLexer(x);
@@ -246,7 +247,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_IF() throws IOException, InvalidTokenException {
+    public void test_T_IF() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_IF, new Position(0,0));
         String x = "if";
         initLexer(x);
@@ -254,7 +255,7 @@ public class LexerTest {
         assertToken(tokenExp, t);
     }
     @Test
-    public void test_T_INT() throws IOException, InvalidTokenException {
+    public void test_T_INT() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_INT, new Position(0,0));
         String x = "123";
         initLexer(x);
@@ -264,7 +265,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_LESS() throws IOException, InvalidTokenException {
+    public void test_T_LESS() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_LESS, new Position(0,0));
         String x = "<";
         initLexer(x);
@@ -273,7 +274,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_LESS_OR_EQ() throws IOException, InvalidTokenException {
+    public void test_T_LESS_OR_EQ() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_LESS_OR_EQ, new Position(0,0));
         String x = "<=";
         initLexer(x);
@@ -282,7 +283,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_LINE() throws IOException, InvalidTokenException {
+    public void test_T_LINE() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_LINE, new Position(0,0));
         String x = "Line";
         initLexer(x);
@@ -291,7 +292,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_LIST() throws IOException, InvalidTokenException {
+    public void test_T_LIST() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_LIST, new Position(0,0));
         String x = "List";
         initLexer(x);
@@ -300,7 +301,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_MINUS() throws IOException, InvalidTokenException {
+    public void test_T_MINUS() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_MINUS, new Position(0,0));
         String x = "-";
         initLexer(x);
@@ -309,7 +310,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_MULT() throws IOException, InvalidTokenException {
+    public void test_T_MULT() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_MULT, new Position(0,0));
         String x = "*";
         initLexer(x);
@@ -318,7 +319,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_NOT() throws IOException, InvalidTokenException {
+    public void test_T_NOT() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_NOT, new Position(0,0));
         String x = "!";
         initLexer(x);
@@ -327,7 +328,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_NOT_EQ() throws IOException, InvalidTokenException {
+    public void test_T_NOT_EQ() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_NOT_EQ, new Position(0,0));
         String x = "!=";
         initLexer(x);
@@ -336,7 +337,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_OR() throws IOException, InvalidTokenException {
+    public void test_T_OR() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_OR, new Position(0,0));
         String x = "||";
         initLexer(x);
@@ -345,7 +346,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_PLUS() throws IOException, InvalidTokenException {
+    public void test_T_PLUS() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_PLUS, new Position(0,0));
         String x = "+";
         initLexer(x);
@@ -354,7 +355,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_POINT() throws IOException, InvalidTokenException {
+    public void test_T_POINT() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_POINT, new Position(0,0));
         String x = "Point";
         initLexer(x);
@@ -363,7 +364,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_PRINT() throws IOException, InvalidTokenException {
+    public void test_T_PRINT() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_PRINT, new Position(0,0));
         String x = "print";
         initLexer(x);
@@ -372,7 +373,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_REG_BRACKET_L() throws IOException, InvalidTokenException {
+    public void test_T_REG_BRACKET_L() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_REG_BRACKET_L, new Position(0,0));
         String x = "(";
         initLexer(x);
@@ -381,7 +382,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_REG_BRACKET_R() throws IOException, InvalidTokenException {
+    public void test_T_REG_BRACKET_R() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_REG_BRACKET_R, new Position(0,0));
         String x = ")";
         initLexer(x);
@@ -390,7 +391,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_RETURN() throws IOException, InvalidTokenException {
+    public void test_T_RETURN() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_RETURN, new Position(0,0));
         String x = "return";
         initLexer(x);
@@ -399,7 +400,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_SEMICOLON() throws IOException, InvalidTokenException {
+    public void test_T_SEMICOLON() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_SEMICOLON, new Position(0,0));
         String x = ";";
         initLexer(x);
@@ -408,7 +409,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_STRING() throws IOException, InvalidTokenException {
+    public void test_T_STRING() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_STRING, new Position(0,0));
         String x = "\"Hello\"";
         initLexer(x);
@@ -417,7 +418,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_WHILE() throws IOException, InvalidTokenException {
+    public void test_T_WHILE() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_WHILE, new Position(0,0));
         String x = "while";
         initLexer(x);
@@ -426,7 +427,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_IDENT_while() throws IOException, InvalidTokenException {
+    public void test_T_IDENT_while() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_IDENT, new Position(0,0));
         String x = "whileident";
         initLexer(x);
@@ -435,8 +436,9 @@ public class LexerTest {
         assertEquals(x, t.getStringValue());
     }
 
+    //poniedzialek 12:30
     @Test
-    public void test_T_STRING_withNewline() throws IOException, InvalidTokenException {
+    public void test_T_STRING_withNewline() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_STRING, new Position(0,0));
         String x = "\"Hello\nt\"";
         String w = "Hello\nt";
@@ -447,7 +449,7 @@ public class LexerTest {
     }
 
     @Test
-    public void test_T_STRING_withEscapeChar() throws IOException, InvalidTokenException {
+    public void test_T_STRING_withEscapeChar() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_STRING, new Position(0,0));
         String x = "\"\\\"name\\\"\"";
         String w = "\"name\"";
@@ -457,10 +459,10 @@ public class LexerTest {
         assertEquals(w, t.getStringValue());
     }
     @Test
-    public void test_T_STRING_withSlashChar() throws IOException, InvalidTokenException {
+    public void test_T_STRING_withSlashChar() throws IOException, InvalidTokenException, ExceededLimitsException {
         Token tokenExp=new Token(TokenType.T_STRING, new Position(0,0));
-        String x = "\"\\name\"";
-        String w = "\\name";
+        String x = "\"\\help\"";
+        String w = "\\help";
         initLexer(x);
         Token t = myLexer.getToken();
         assertToken(tokenExp, t);
@@ -487,11 +489,25 @@ public class LexerTest {
             longArray[i] = 'x';
         String x = "#" + Arrays.toString(longArray);
         initLexer(x);
+        assertThrows(ExceededLimitsException.class, () -> myLexer.getToken());
+    }
+
+    @Test
+    public void testException_overflow() throws IOException {
+        String x = "99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999";
+        initLexer(x);
+        assertThrows(ExceededLimitsException.class, () -> myLexer.getToken());
+    }
+
+    @Test
+    public void testException_invalidString() throws IOException {
+        String x = "\"No end";
+        initLexer(x);
         assertThrows(InvalidTokenException.class, () -> myLexer.getToken());
     }
 
     @Test
-    public void test_Sequence1() throws IOException, InvalidTokenException {
+    public void test_Sequence1() throws IOException, InvalidTokenException, ExceededLimitsException {
         ArrayList<Token> expectedTokens = new ArrayList<>();
         expectedTokens.add(new Token(TokenType.T_WHILE, new Position(0,0)));
         expectedTokens.add(new Token(TokenType.T_REG_BRACKET_L, new Position(5,0)));

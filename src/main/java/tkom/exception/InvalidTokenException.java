@@ -13,13 +13,13 @@ public class InvalidTokenException extends Exception {
     }
 
     /**
-     * Exception thrown when maximum possible length of token was exceeded.
+     * Exception thrown when either an unknown character was passed or a token cannot be created.
      * @param pos           position of the first character of invalid token
      * @param invalidToken  actual string-text of the token
-     * @param maxLength     maximum length available for given type of token
+     * @param expectedToken expected string-text of the token
      */
-    public InvalidTokenException(Position pos, String invalidToken, int maxLength) {
-        super("Too long token " + invalidToken + " at the position: " + pos.toString() +
-                " max size: " + maxLength);
+    public InvalidTokenException(Position pos, String invalidToken, String expectedToken) {
+        super("Invalid token " + invalidToken + " at the position: " + pos.toString() + " expected: " + expectedToken);
     }
+
 }

@@ -7,6 +7,8 @@ public class TokenMap {
     public static final HashMap<String, TokenType> T_KEYWORDS;
     public static final HashMap<String, TokenType> T_SIGNS;
 
+    public static final HashMap<Character, Character> T_ESCAPECHARS;
+
     static {
         T_KEYWORDS = new HashMap<>();
         T_KEYWORDS.put("else", TokenType.T_ELSE);
@@ -47,4 +49,15 @@ public class TokenMap {
         T_SIGNS.put(")", TokenType.T_REG_BRACKET_R);
         T_SIGNS.put(";", TokenType.T_SEMICOLON);
     }
+
+    static {
+        T_ESCAPECHARS = new HashMap<>();
+        T_ESCAPECHARS.put('r', '\r');
+        T_ESCAPECHARS.put('n', '\n');
+        T_ESCAPECHARS.put('t', '\t');
+        T_ESCAPECHARS.put('\"', '\"');
+        T_ESCAPECHARS.put('\\', '\\');
+    }
+
+
 }

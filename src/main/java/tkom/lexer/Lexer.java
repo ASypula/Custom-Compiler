@@ -5,6 +5,7 @@ import tkom.common.BuffReader;
 import tkom.common.ExceptionHandler;
 import tkom.common.Position;
 import tkom.common.tokens.*;
+import tkom.exception.ExceededLimitsException;
 import tkom.exception.InvalidTokenException;
 
 import java.io.BufferedReader;
@@ -12,10 +13,13 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import static tkom.common.tokens.TokenMap.T_KEYWORDS;
-import static tkom.common.tokens.TokenMap.T_SIGNS;
+import static tkom.common.tokens.TokenMap.*;
 
-//TODO: later additional layer between lexer and parser to omit comments
+//escape characters handled correctly in the string
+//overflow in numbers
+//more tests for errors
+//different error classes
+//change of name buildIdentifier -> buildIdentifierOrKeyword
 
 public class Lexer {
     boolean running;    // set to true as long as EOF is not encountered
@@ -26,8 +30,6 @@ public class Lexer {
     char currChar;
 
     static final int MAX_LENGTH = 200; // maximum number of chars available in a string or a comment
-    static final int MAX_INT_PRECISION = 9;
-    static final int MAX_DOUBLE_PRECISION = 32;
 
     List<Character> newlineChars = Arrays.asList('\n', '\r');
 
@@ -115,12 +117,12 @@ public class Lexer {
     }
 
     /**
-     * Builds an identifier: either user's custom defined variable
+     * Builds an identifier or a keyword: either user's custom defined variable
      * or a language keyword e.g. 'if'
      * @throws IOException              on BufferedReader error
-     * @throws InvalidTokenException    on too long token
+     * @throws ExceededLimitsException    on too long token
      */
-    public boolean tryBuildIdentifier() throws IOException, InvalidTokenException {
+    public boolean tryBuildIdentifierOrKeyword() throws IOException, ExceededLimitsException {
         if (!Character.isLetter(currChar))
             return false;
         int identLen = 0;
@@ -134,7 +136,7 @@ public class Lexer {
             nextChar();
         }
         if (identLen > MAX_LENGTH)
-            throw new InvalidTokenException(firstPos, builder.toString(), MAX_LENGTH);
+            throw new ExceededLimitsException(firstPos, builder.toString(), MAX_LENGTH);
         String newString = builder.toString();
         if (T_KEYWORDS.containsKey(newString))
             currToken = new Token(T_KEYWORDS.get(newString), firstPos);
@@ -144,21 +146,21 @@ public class Lexer {
     }
 
     /**
-     * Builds a number as an integer. Counts the total number of digits to disable overflow exception
-     * and to later be able to create double value by dividing int number by the digit count.
+     * Builds a number as a double. Counts the total number of digits to allow later
+     * creation of floating point number by dividing double number by the digit count.
      * Separately takes care of the total and fractional part.
      * @param firstPos                  position of the first char of the token
      * @return                          pair: L - calculated number, R - count of digits
      * @throws IOException              on BufferedReader error
-     * @throws InvalidTokenException    on too long token
+     * @throws ExceededLimitsException  on possible overflow
      */
-    public ImmutablePair<Integer, Integer> buildNumber(Position firstPos) throws IOException, InvalidTokenException {
+    public ImmutablePair<Double, Integer> buildNumber(Position firstPos) throws IOException, ExceededLimitsException {
         int count = 0;
-        int number =0;
+        double number =0;
         while (running && Character.isDigit(currChar)) {
             count++;
-            if (count>MAX_DOUBLE_PRECISION)
-                throw new InvalidTokenException(firstPos, Integer.toString(number), MAX_DOUBLE_PRECISION);
+            if (number>(Double.MAX_VALUE - currChar)/10)
+                throw new ExceededLimitsException(firstPos, Double.toString(number));
             number = number*10 + Character.getNumericValue(currChar);
             nextChar();
         }
@@ -171,31 +173,32 @@ public class Lexer {
      * If possible, assigns newly created token to currToken.
      * @return                          If a numerical token can be created
      * @throws IOException              on BufferedReader error
-     * @throws InvalidTokenException    on too long token
+     * @throws ExceededLimitsException  on overflow
      */
-    public boolean tryBuildIntOrDouble() throws IOException, InvalidTokenException {
+    public boolean tryBuildIntOrDouble() throws IOException, ExceededLimitsException {
         if (!Character.isDigit(currChar))
             return false;
         Position firstPos = new Position(br.currPos.rowNo, br.currPos.colNo);
-        int number = 0;
+        double number = 0;
         if (currChar=='0') {
             number+=Character.getNumericValue(currChar);
             // omit any additional leading zero's
             while (currChar == '0')
                 nextChar();
         }
-        ImmutablePair<Integer, Integer> pair = buildNumber(firstPos);
+        ImmutablePair<Double, Integer> pair = buildNumber(firstPos);
         number+=pair.left;
         if (currChar == '.'){
             nextChar();
-            ImmutablePair<Integer, Integer> pair1 = buildNumber(firstPos);
-            double numberD = (double)number + pair1.left/Math.pow(10, pair1.right);
+            ImmutablePair<Double, Integer> pair1 = buildNumber(firstPos);
+            double numberD = number + pair1.left/Math.pow(10, pair1.right);
             currToken = new TokenDouble(TokenType.T_DOUBLE, firstPos, numberD);
         }
-        else if (pair.right > MAX_INT_PRECISION)
+        // check against max_int, if number > MAX_VALUE, return a double, else return int
+        else if (number > Integer.MAX_VALUE)
             currToken =  new TokenDouble(TokenType.T_DOUBLE, firstPos, number);
         else
-            currToken =  new TokenInt(TokenType.T_INT, firstPos, number);
+            currToken =  new TokenInt(TokenType.T_INT, firstPos, (int)number);
         return true;
     }
 
@@ -203,12 +206,12 @@ public class Lexer {
      * Depending on first character tries building either a number or an identifier
      * @return                          new Token of numerical or string type
      * @throws IOException              on BufferedReader error
-     * @throws InvalidTokenException    on too long token
+     * @throws ExceededLimitsException    on too long token
      */
-    public boolean tryBuildNumOrIdentifier() throws IOException, InvalidTokenException {
+    public boolean tryBuildNumOrIdentifier() throws IOException, ExceededLimitsException {
         if (!Character.isLetterOrDigit(currChar))
             return false;
-        return tryBuildIntOrDouble() || tryBuildIdentifier();
+        return tryBuildIntOrDouble() || tryBuildIdentifierOrKeyword();
     }
 
     /**
@@ -218,9 +221,9 @@ public class Lexer {
      * as it ends the comment.
      * @return                          If Token with type T_COMMENT can be created
      * @throws IOException              on BufferedReader error
-     * @throws InvalidTokenException    on too long token
+     * @throws ExceededLimitsException    on too long token
      */
-    public boolean tryBuildComment() throws IOException, InvalidTokenException {
+    public boolean tryBuildComment() throws IOException, ExceededLimitsException {
         if (!(currChar =='#'))
             return false;
         int commentLen = 0;
@@ -232,7 +235,7 @@ public class Lexer {
             nextCharCommText();
         }
         if (commentLen > MAX_LENGTH)
-            throw new InvalidTokenException(firstPos, builder.toString(), MAX_LENGTH);
+            throw new ExceededLimitsException(firstPos, builder.toString(), MAX_LENGTH);
         if (newlineChars.contains(currChar))
             nextChar();
         currToken = new Token(TokenType.T_COMMENT, firstPos);
@@ -246,9 +249,10 @@ public class Lexer {
      * and characters as tab should be included in the resulting string.
      * @return                          If new Token with type T_STRING can be created
      * @throws IOException              on BufferedReader error
-     * @throws InvalidTokenException    on too long token
+     * @throws ExceededLimitsException  on too long token
+     * @throws InvalidTokenException    on invalid token
      */
-    public boolean tryBuildString() throws IOException, InvalidTokenException {
+    public boolean tryBuildString() throws IOException, ExceededLimitsException, InvalidTokenException {
         if (!(currChar=='\"'))
             return false;
         int stringLen = 0;
@@ -260,14 +264,20 @@ public class Lexer {
             // This may be a start of escape character
             if (currChar == '\\') {
                 nextCharCommText();
-                if (currChar != '\"')
+                //TODO: done
+                if (T_ESCAPECHARS.containsKey(currChar))
+                    builder.append(T_ESCAPECHARS.get(currChar));
+                else{
                     builder.append('\\');
+                    builder.append(currChar);
+                }
             }
-            builder.append(currChar);
+            else
+                builder.append(currChar);
             nextCharCommText();
         }
         if (stringLen > MAX_LENGTH)
-            throw new InvalidTokenException(firstPos, builder.toString(), MAX_LENGTH);
+            throw new ExceededLimitsException(firstPos, builder.toString(), MAX_LENGTH);
         if (currChar == '\"') {
             nextChar();
             currToken = new TokenString(TokenType.T_STRING, firstPos, builder.toString());
@@ -281,7 +291,7 @@ public class Lexer {
      * Depending on first character invokes functions that will start building
      * appropriate tokens.
      */
-    public Token getToken() throws IOException, InvalidTokenException {
+    public Token getToken() throws IOException, InvalidTokenException, ExceededLimitsException {
         if (!running)
             return new Token(TokenType.T_EOF, new Position(br.currPos.rowNo, br.currPos.colNo));
         if (tryBuildNumOrIdentifier() || tryBuildComment() || tryBuildString() || tryBuildSign())
