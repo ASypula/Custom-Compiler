@@ -27,4 +27,8 @@ public class InvalidTokenException extends Exception {
     public InvalidTokenException(Token token, TokenType tType) {
         super("Missing token: " + tType.toString() + ". Got: " + token.toString() + "at position: " + token.getPosition().toString());
     }
+
+    public InvalidTokenException(Token token, TokenType tType) {
+        super("Missing token: " + tType.toString() + ". Got: " + token.toString() + "at position: " + token.getPosition().toString());
+    }
 }
