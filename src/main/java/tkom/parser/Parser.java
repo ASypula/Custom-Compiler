@@ -6,6 +6,7 @@ import tkom.common.tokens.TokenType;
 import tkom.components.*;
 import tkom.exception.ExceededLimitsException;
 import tkom.exception.InvalidTokenException;
+import tkom.exception.MissingPartException;
 import tkom.lexer.Lexer;
 
 import java.io.IOException;
@@ -13,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Parser {
     Lexer lexer;
@@ -44,6 +44,21 @@ public class Parser {
      */
     private boolean isCurrToken(TokenType tType){
         return currToken.getType() == tType;
+    }
+
+    /**
+     * ojoj
+     * @param tType
+     * @return
+     * @throws InvalidTokenException
+     * @throws ExceededLimitsException
+     * @throws IOException
+     */
+    private boolean consumeIfToken(TokenType tType) throws InvalidTokenException, ExceededLimitsException, IOException {
+        if (!isCurrToken(tType))
+            return false;
+        nextToken();
+        return true;
     }
 
     private boolean parseLiteral(){
@@ -105,10 +120,9 @@ public class Parser {
         if (parseLiteral() || cos()){
             ;
         }
-        else if (isCurrToken(TokenType.T_REG_BRACKET_L)){
-            nextToken();
+        else if (consumeIfToken(TokenType.T_REG_BRACKET_L)){
             parseExpression();
-            if (!isCurrToken(TokenType.T_REG_BRACKET_R))
+            if (!consumeIfToken(TokenType.T_REG_BRACKET_R))
                 return false;
         }
 
@@ -120,42 +134,39 @@ public class Parser {
      * @return
      * @throws InvalidTokenException
      */
-    private boolean parseIfStatement() throws InvalidTokenException, IOException, ExceededLimitsException {
-        if (isCurrToken(TokenType.T_IF))
-            return false;
-        nextToken();
-        if (!isCurrToken( TokenType.T_REG_BRACKET_L))
+    private IStatement parseIfStatement() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
+        if (!consumeIfToken(TokenType.T_IF))
+            return null;
+        if (!consumeIfToken( TokenType.T_REG_BRACKET_L))
             throw new InvalidTokenException(currToken, TokenType.T_REG_BRACKET_L);
-        nextToken();
-        parseExpression();
-        if (!isCurrToken(TokenType.T_REG_BRACKET_R))
+        IExpression expr = parseExpression();
+        if (expr == null)
+            throw new MissingPartException(currToken, "expression", "IfStatement");
+        if (!consumeIfToken(TokenType.T_REG_BRACKET_R))
             throw new InvalidTokenException(currToken, TokenType.T_REG_BRACKET_R);
-        nextToken();
-        parseBlock();
-        if (isCurrToken(TokenType.T_ELSE)) {
-            nextToken();
-            parseBlock();
-        }
-        return true;
+        Block blockTrue = parseBlock();
+        Block blockElse = null;
+        if (consumeIfToken(TokenType.T_ELSE))
+            blockElse = parseBlock();
+        return new IfStatement(expr, blockTrue, blockElse);
     }
 
     /**
      * Parse: “while”, “(“, expr, “)”, block;
      * @return
      */
-    private boolean parseWhileStatement() throws InvalidTokenException, IOException {
-        if (!isCurrToken(TokenType.T_WHILE))
-            return false;
-        nextToken();
-        if (!isCurrToken(TokenType.T_REG_BRACKET_L))
+    private IStatement parseWhileStatement() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
+        if (!consumeIfToken(TokenType.T_WHILE))
+            return null;
+        if (!consumeIfToken(TokenType.T_REG_BRACKET_L))
             throw new InvalidTokenException(currToken, TokenType.T_REG_BRACKET_L);
-        nextToken();
-        parseExpression();
-        if (!isCurrToken(TokenType.T_REG_BRACKET_R))
+        IExpression expr = parseExpression();
+        if (expr == null)
+            throw new MissingPartException(currToken, "expression", "WhileStatement");
+        if (!consumeIfToken(TokenType.T_REG_BRACKET_R))
             throw new InvalidTokenException(currToken, TokenType.T_REG_BRACKET_R);
-        nextToken();
-        parseBlock();
-        return true;
+        Block block = parseBlock();
+        return new WhileStatement(expr, block);
     }
 
     /**
@@ -164,14 +175,12 @@ public class Parser {
      * @throws InvalidTokenException
      * @throws IOException
      */
-    private boolean parseReturnStatement() throws InvalidTokenException, IOException {
-        if (!isCurrToken(TokenType.T_RETURN))
-            return false;
-        nextToken();
+    private IStatement parseReturnStatement() throws InvalidTokenException, IOException, ExceededLimitsException {
+        if (!consumeIfToken(TokenType.T_RETURN))
+            return null;
         parseExpression();
-        if (!isCurrToken(TokenType.T_SEMICOLON))
+        if (!consumeIfToken(TokenType.T_SEMICOLON))
             throw new InvalidTokenException(currToken, TokenType.T_SEMICOLON);
-        nextToken();
         return true;
     }
 
@@ -204,10 +213,20 @@ public class Parser {
         return true;
     }
 
-    private IStatement parseStatement() throws InvalidTokenException, IOException {
-        if (parseIfStatement() || parseWhileStatement() || parseReturnStatement() ||
-        parseAssignStmtOrFunctionCall() || parsePrintStatement() || parseBlock() )
-        ;
+    private IStatement parseStatement() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
+        IStatement stmt = parseIfStatement();
+        if (stmt != null)
+            return stmt;
+        stmt = parseWhileStatement();
+        if (stmt != null)
+            return stmt;
+        stmt = parseReturnStatement();
+        if (stmt != null)
+            return stmt;
+        stmt = parseAssignStmtOrFunctionCall();
+        if (stmt != null)
+            return stmt;
+        return parsePrintStatement();
     }
 
     /**
@@ -217,9 +236,8 @@ public class Parser {
      * @throws IOException
      */
     private Block parseBlock() throws InvalidTokenException, IOException, ExceededLimitsException {
-        if (!isCurrToken(TokenType.T_CURLY_BRACKET_L))
+        if (!consumeIfToken(TokenType.T_CURLY_BRACKET_L))
             return null;
-        nextToken();
         ArrayList<IStatement> statements = new ArrayList<>();
         IStatement stmt;
         stmt = parseStatement();
@@ -227,9 +245,8 @@ public class Parser {
             statements.add(stmt);
             stmt = parseStatement();
         }
-        if (!isCurrToken(TokenType.T_CURLY_BRACKET_R))
+        if (!consumeIfToken(TokenType.T_CURLY_BRACKET_R))
             throw new InvalidTokenException(currToken, TokenType.T_CURLY_BRACKET_R);
-        nextToken();
         return new Block(statements);
     }
 
@@ -245,8 +262,7 @@ public class Parser {
         if (isCurrToken(TokenType.T_IDENT)) {
             params.add(new Parameter(currToken.getStringValue()));
             nextToken();
-            while (isCurrToken(TokenType.T_COLON)) {
-                nextToken();
+            while (consumeIfToken(TokenType.T_COLON)) {
                 if (isCurrToken(TokenType.T_IDENT)) {
                     String name = currToken.getStringValue();
                     if (containsName(params, name))
@@ -270,23 +286,18 @@ public class Parser {
         if (isCurrToken(TokenType.T_EOF))
             return false;
         nextToken();
-        if (!isCurrToken(TokenType.T_FUNCTION))
+        if (!consumeIfToken(TokenType.T_FUNCTION))
             throw new InvalidTokenException(currToken, TokenType.T_FUNCTION);
-        nextToken();
         if (!isCurrToken(TokenType.T_IDENT))
             throw new InvalidTokenException(currToken, TokenType.T_IDENT);
         String name = currToken.getStringValue();
         nextToken();
-        if (!isCurrToken(TokenType.T_REG_BRACKET_L))
+        if (!consumeIfToken(TokenType.T_REG_BRACKET_L))
             throw new InvalidTokenException(currToken, TokenType.T_REG_BRACKET_L);
-        nextToken();
-        //TODO
         ArrayList<Parameter> params;
         params = parseParameters();
-        if (!isCurrToken(TokenType.T_REG_BRACKET_R))
+        if (!consumeIfToken(TokenType.T_REG_BRACKET_R))
             throw new InvalidTokenException(currToken, TokenType.T_REG_BRACKET_R);
-        nextToken();
-        //TODO
         Block block = parseBlock();
         functions.put(name, new FunctionDef(name, params, block));
         return true;
