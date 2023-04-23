@@ -1,9 +1,10 @@
 package tkom.parser;
 
+import tkom.common.ExceptionHandler;
 import tkom.common.tokens.Token;
 import tkom.common.tokens.TokenType;
-import tkom.components.FunctionDef;
-import tkom.components.Program;
+import tkom.components.*;
+import tkom.exception.ExceededLimitsException;
 import tkom.exception.InvalidTokenException;
 import tkom.lexer.Lexer;
 
@@ -11,6 +12,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Parser {
     Lexer lexer;
@@ -18,17 +21,27 @@ public class Parser {
 
     TokenType[] relationOpArray = {TokenType.T_EQUALS, TokenType.T_GREATER, TokenType.T_GREATER_OR_EQ,
             TokenType.T_LESS, TokenType.T_LESS_OR_EQ, TokenType.T_NOT_EQ};
+    public ExceptionHandler excHandler;
+    public Parser(Lexer lex, ExceptionHandler eh){
 
-    public Parser(Lexer lex){
         lexer = lex;
+        excHandler = eh;
     }
 
-    private void nextToken() throws InvalidTokenException, IOException {
+    /**
+     * Get next token from lexer but omit the comment tokens
+     */
+    private void nextToken() throws InvalidTokenException, IOException, ExceededLimitsException {
         currToken = lexer.getToken();
         while (currToken.getType() == TokenType.T_COMMENT)
             currToken = lexer.getToken();
     }
 
+    /**
+     * Compare type of current token
+     * @param tType     token type for comparison
+     * @return          true if the types are equal, false otherwise
+     */
     private boolean isCurrToken(TokenType tType){
         return currToken.getType() == tType;
     }
@@ -38,7 +51,7 @@ public class Parser {
         isCurrToken(TokenType.T_STRING) || isCurrToken(TokenType.T_TRUE) || isCurrToken(TokenType.T_FALSE));
     }
 
-    private boolean parseMultExpression() throws InvalidTokenException, IOException {
+    private IExpression parseMultExpression() throws InvalidTokenException, IOException, ExceededLimitsException {
         parsePrimExpression();
         if (isCurrToken(TokenType.T_MULT) || isCurrToken(TokenType.T_DIV)){
             nextToken();
@@ -47,7 +60,7 @@ public class Parser {
         return false;
     }
 
-    private boolean parseArithmExpression(){
+    private IExpression parseArithmExpression() throws InvalidTokenException, ExceededLimitsException, IOException {
         parseMultExpression();
         if (isCurrToken(TokenType.T_PLUS) || isCurrToken(TokenType.T_MINUS)){
             nextToken();
@@ -56,7 +69,7 @@ public class Parser {
         return false;
     }
 
-    private boolean parseRelExpression(){
+    private IExpression parseRelExpression(){
         parseArithmExpression();
         if (Arrays.asList(relationOpArray).contains(currToken.getType())){
             nextToken();
@@ -65,7 +78,7 @@ public class Parser {
         return false;
     }
 
-    private boolean parseAndExpression(){
+    private IExpression parseAndExpression(){
         parseRelExpression();
         if (isCurrToken(TokenType.T_AND)){
             nextToken();
@@ -84,7 +97,7 @@ public class Parser {
     }
 
     //TODO: finish
-    private boolean parsePrimExpression() throws InvalidTokenException, IOException {
+    private boolean parsePrimExpression() throws InvalidTokenException, IOException, ExceededLimitsException {
         if (isCurrToken(TokenType.T_NOT) || isCurrToken(TokenType.T_MINUS)){
             // do sth
             nextToken();
@@ -102,22 +115,12 @@ public class Parser {
         return false;
     }
 
-    private boolean parseParameters(){
-        if (!isCurrToken(TokenType.T_IDENT))
-            return false;
-        while (isCurrToken(TokenType.T_COLON)){
-            nextToken();
-            if (!isCurrToken(TokenType.T_IDENT))
-                return false;
-        }
-    }
-
     /**
      * Parse: “if”, “(“, expr, “)”, block, [“else”, block];
      * @return
      * @throws InvalidTokenException
      */
-    private boolean parseIfStatement() throws InvalidTokenException, IOException {
+    private boolean parseIfStatement() throws InvalidTokenException, IOException, ExceededLimitsException {
         if (isCurrToken(TokenType.T_IF))
             return false;
         nextToken();
@@ -201,7 +204,7 @@ public class Parser {
         return true;
     }
 
-    private void parseStatement() throws InvalidTokenException, IOException {
+    private IStatement parseStatement() throws InvalidTokenException, IOException {
         if (parseIfStatement() || parseWhileStatement() || parseReturnStatement() ||
         parseAssignStmtOrFunctionCall() || parsePrintStatement() || parseBlock() )
         ;
@@ -213,16 +216,47 @@ public class Parser {
      * @throws InvalidTokenException
      * @throws IOException
      */
-    private boolean parseBlock() throws InvalidTokenException, IOException {
+    private Block parseBlock() throws InvalidTokenException, IOException, ExceededLimitsException {
         if (!isCurrToken(TokenType.T_CURLY_BRACKET_L))
-            throw new InvalidTokenException(currToken, TokenType.T_CURLY_BRACKET_L);
+            return null;
         nextToken();
-        //TODO
-        parseStatement();
+        ArrayList<IStatement> statements = new ArrayList<>();
+        IStatement stmt;
+        stmt = parseStatement();
+        while (stmt!=null){
+            statements.add(stmt);
+            stmt = parseStatement();
+        }
         if (!isCurrToken(TokenType.T_CURLY_BRACKET_R))
             throw new InvalidTokenException(currToken, TokenType.T_CURLY_BRACKET_R);
         nextToken();
-        return false;
+        return new Block(statements);
+    }
+
+    private boolean containsName(ArrayList<Parameter> list, String name){
+        List<String> containsList = list.stream()
+                .map(s -> s.name)
+                .filter(s -> s == name).toList();
+        return !(containsList.size() == 0);
+    }
+
+    private ArrayList<Parameter> parseParameters() throws InvalidTokenException, ExceededLimitsException, IOException {
+        ArrayList<Parameter> params = new ArrayList<>();
+        if (isCurrToken(TokenType.T_IDENT)) {
+            params.add(new Parameter(currToken.getStringValue()));
+            nextToken();
+            while (isCurrToken(TokenType.T_COLON)) {
+                nextToken();
+                if (isCurrToken(TokenType.T_IDENT)) {
+                    String name = currToken.getStringValue();
+                    if (containsName(params, name))
+                        throw Exception("TODO different exception");
+                    params.add(new Parameter(name));
+                    nextToken();
+                }
+            }
+        }
+        return params;
     }
 
     /**
@@ -232,7 +266,7 @@ public class Parser {
      * @throws InvalidTokenException
      * @throws IOException
      */
-    private boolean parseFuncDef(HashMap<String, FunctionDef> functions) throws InvalidTokenException, IOException {
+    private boolean parseFuncDef(HashMap<String, FunctionDef> functions) throws InvalidTokenException, IOException, ExceededLimitsException {
         if (isCurrToken(TokenType.T_EOF))
             return false;
         nextToken();
@@ -247,16 +281,24 @@ public class Parser {
             throw new InvalidTokenException(currToken, TokenType.T_REG_BRACKET_L);
         nextToken();
         //TODO
-        parseParameters();
+        ArrayList<Parameter> params;
+        params = parseParameters();
         if (!isCurrToken(TokenType.T_REG_BRACKET_R))
             throw new InvalidTokenException(currToken, TokenType.T_REG_BRACKET_R);
         nextToken();
         //TODO
-        parseBlock();
-        return false;
+        Block block = parseBlock();
+        functions.put(name, new FunctionDef(name, params, block));
+        return true;
     }
 
-    public Program parse() throws InvalidTokenException, IOException {
+    /**
+     * Parse the given program as long as the EOF is not encountered
+     * @return      parsed program
+     * @throws InvalidTokenException
+     * @throws IOException
+     */
+    public Program parse() throws InvalidTokenException, IOException, ExceededLimitsException {
         HashMap<String, FunctionDef> functions = new HashMap<>();
         while (parseFuncDef(functions));
         return new Program(functions);
