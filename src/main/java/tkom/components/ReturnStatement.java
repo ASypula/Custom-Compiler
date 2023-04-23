@@ -1,4 +1,4 @@
 package tkom.components;
 
-public class ReturnStatement implements Statement{
+public class ReturnStatement implements IStatement {
 }

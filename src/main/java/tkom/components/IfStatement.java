@@ -1,4 +1,4 @@
 package tkom.components;
 
-public class IfStatement implements Statement{
+public class IfStatement implements IStatement {
 }

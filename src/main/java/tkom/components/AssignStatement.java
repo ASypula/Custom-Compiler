@@ -1,4 +1,4 @@
 package tkom.components;
 
-public class AssignStatement implements Statement{
+public class AssignStatement implements IStatement {
 }

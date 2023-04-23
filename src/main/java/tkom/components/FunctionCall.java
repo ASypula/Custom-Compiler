@@ -1,4 +1,4 @@
 package tkom.components;
 
-public class FunctionCall implements Statement{
+public class FunctionCall implements IStatement {
 }
