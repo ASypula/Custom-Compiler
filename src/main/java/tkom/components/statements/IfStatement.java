@@ -1,4 +1,7 @@
-package tkom.components;
+package tkom.components.statements;
+
+import tkom.components.Block;
+import tkom.components.expressions.IExpression;
 
 public class IfStatement implements IStatement {
     IExpression condition;

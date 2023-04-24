@@ -4,6 +4,13 @@ import tkom.common.ExceptionHandler;
 import tkom.common.tokens.Token;
 import tkom.common.tokens.TokenType;
 import tkom.components.*;
+import tkom.components.expressions.AndExpression;
+import tkom.components.expressions.IExpression;
+import tkom.components.expressions.RelExpression;
+import tkom.components.statements.IStatement;
+import tkom.components.statements.IfStatement;
+import tkom.components.statements.ReturnStatement;
+import tkom.components.statements.WhileStatement;
 import tkom.exception.ExceededLimitsException;
 import tkom.exception.InvalidTokenException;
 import tkom.exception.MissingPartException;
@@ -93,22 +100,26 @@ public class Parser {
         return false;
     }
 
-    private IExpression parseAndExpression(){
-        parseRelExpression();
-        if (isCurrToken(TokenType.T_AND)){
-            nextToken();
-            parseRelExpression();
+    private IExpression parseAndExpression() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
+        IExpression leftRel = parseRelExpression();
+        while (consumeIfToken(TokenType.T_AND)){
+            IExpression rightRel = parseRelExpression();
+            if (rightRel == null)
+                throw new MissingPartException(currToken, "right RelExpression", "AndCondition");
+            leftRel = new RelExpression(leftRel, rightRel);
         }
-        return false;
+        return leftRel;
     }
 
-    private boolean parseExpression(){
-        parseAndExpression();
-        if (isCurrToken(TokenType.T_OR)){
-            nextToken();
-            parseAndExpression();
+    private IExpression parseExpression() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
+        IExpression leftAnd = parseAndExpression();
+        while (consumeIfToken(TokenType.T_OR)){
+            IExpression rightAnd = parseAndExpression();
+            if (rightAnd == null)
+                throw new MissingPartException(currToken, "right AndExpression", "OrCondition");
+            leftAnd = new AndExpression(leftAnd, rightAnd);
         }
-        return false;
+        return leftAnd;
     }
 
     //TODO: finish

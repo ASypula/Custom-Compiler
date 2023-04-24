@@ -1,4 +1,6 @@
-package tkom.components;
+package tkom.components.statements;
+
+import tkom.components.expressions.IExpression;
 
 public class ReturnStatement implements IStatement {
     IExpression expression;
