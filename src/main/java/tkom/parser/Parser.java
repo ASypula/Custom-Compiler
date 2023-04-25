@@ -4,9 +4,7 @@ import tkom.common.ExceptionHandler;
 import tkom.common.tokens.Token;
 import tkom.common.tokens.TokenType;
 import tkom.components.*;
-import tkom.components.expressions.AndExpression;
-import tkom.components.expressions.IExpression;
-import tkom.components.expressions.RelExpression;
+import tkom.components.expressions.*;
 import tkom.components.statements.IStatement;
 import tkom.components.statements.IfStatement;
 import tkom.components.statements.ReturnStatement;
@@ -73,57 +71,70 @@ public class Parser {
         isCurrToken(TokenType.T_STRING) || isCurrToken(TokenType.T_TRUE) || isCurrToken(TokenType.T_FALSE));
     }
 
-    private IExpression parseMultExpression() throws InvalidTokenException, IOException, ExceededLimitsException {
-        parsePrimExpression();
+    private IExpression parseMultExpression() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
+        IExpression left = parsePrimExpression();
         if (isCurrToken(TokenType.T_MULT) || isCurrToken(TokenType.T_DIV)){
+            Token signToken = currToken;
             nextToken();
-            parsePrimExpression();
+            IExpression right = parsePrimExpression();
+            if (right == null)
+                throw new MissingPartException(currToken, "right PrimExpression", "MultExpression");
+            left = new MultExpression(left, right, signToken);
         }
-        return false;
+        return left;
+    }
     }
 
-    private IExpression parseArithmExpression() throws InvalidTokenException, ExceededLimitsException, IOException {
-        parseMultExpression();
+    private IExpression parseArithmExpression() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
+        IExpression left = parseMultExpression();
         if (isCurrToken(TokenType.T_PLUS) || isCurrToken(TokenType.T_MINUS)){
+            Token signToken = currToken;
             nextToken();
-            parseMultExpression();
+            IExpression right = parseMultExpression();
+            if (right == null)
+                throw new MissingPartException(currToken, "right MultExpression", "ArithmExpression");
+            left = new ArithmExpression(left, right, signToken);
         }
-        return false;
+        return left;
     }
 
-    private IExpression parseRelExpression(){
-        parseArithmExpression();
+    private IExpression parseRelExpression() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
+        IExpression left = parseArithmExpression();
         if (Arrays.asList(relationOpArray).contains(currToken.getType())){
+            Token relToken = currToken;
             nextToken();
-            parseArithmExpression();
+            IExpression right = parseArithmExpression();
+            if (right == null)
+                throw new MissingPartException(currToken, "right ArithmExpression", "RelExpression");
+            left = new RelExpression(left, right, relToken);
         }
-        return false;
+        return left;
     }
 
     private IExpression parseAndExpression() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
-        IExpression leftRel = parseRelExpression();
+        IExpression left = parseRelExpression();
         while (consumeIfToken(TokenType.T_AND)){
-            IExpression rightRel = parseRelExpression();
-            if (rightRel == null)
+            IExpression right = parseRelExpression();
+            if (right == null)
                 throw new MissingPartException(currToken, "right RelExpression", "AndCondition");
-            leftRel = new RelExpression(leftRel, rightRel);
+            left = new AndExpression(left, right);
         }
-        return leftRel;
+        return left;
     }
 
     private IExpression parseExpression() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
-        IExpression leftAnd = parseAndExpression();
+        IExpression left = parseAndExpression();
         while (consumeIfToken(TokenType.T_OR)){
-            IExpression rightAnd = parseAndExpression();
-            if (rightAnd == null)
+            IExpression right = parseAndExpression();
+            if (right == null)
                 throw new MissingPartException(currToken, "right AndExpression", "OrCondition");
-            leftAnd = new AndExpression(leftAnd, rightAnd);
+            left = new Expression(left, right);
         }
-        return leftAnd;
+        return left;
     }
 
     //TODO: finish
-    private boolean parsePrimExpression() throws InvalidTokenException, IOException, ExceededLimitsException {
+    private IExpression parsePrimExpression() throws InvalidTokenException, IOException, ExceededLimitsException {
         if (isCurrToken(TokenType.T_NOT) || isCurrToken(TokenType.T_MINUS)){
             // do sth
             nextToken();
@@ -215,7 +226,7 @@ public class Parser {
      * @throws InvalidTokenException
      * @throws IOException
      */
-    private boolean parseAssignStmtOrFunctionCall() throws InvalidTokenException, IOException {
+    private boolean parseAssignStmtOrFunctionCall() throws InvalidTokenException, IOException, ExceededLimitsException {
         if (!isCurrToken(TokenType.T_IDENT))
             return false;
         nextToken();
@@ -248,7 +259,7 @@ public class Parser {
      * @throws InvalidTokenException
      * @throws IOException
      */
-    private Block parseBlock() throws InvalidTokenException, IOException, ExceededLimitsException {
+    private Block parseBlock() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         if (!consumeIfToken(TokenType.T_CURLY_BRACKET_L))
             return null;
         ArrayList<IStatement> statements = new ArrayList<>();
@@ -295,7 +306,7 @@ public class Parser {
      * @throws InvalidTokenException
      * @throws IOException
      */
-    private boolean parseFuncDef(HashMap<String, FunctionDef> functions) throws InvalidTokenException, IOException, ExceededLimitsException {
+    private boolean parseFuncDef(HashMap<String, FunctionDef> functions) throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         if (isCurrToken(TokenType.T_EOF))
             return false;
         nextToken();
