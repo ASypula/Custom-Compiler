@@ -5,6 +5,7 @@ import tkom.common.Position;
 import tkom.common.tokens.Token;
 import tkom.common.tokens.TokenInt;
 import tkom.common.tokens.TokenType;
+import tkom.exception.ExceededLimitsException;
 import tkom.exception.InvalidTokenException;
 import tkom.lexer.Lexer;
 
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 
 public class Main
 {
-    public static void main( String[] args ) throws IOException, InvalidTokenException {
+    public static void main( String[] args ) throws IOException, InvalidTokenException, ExceededLimitsException {
         String filename = "src/main/java/tkom/test.txt";
         ExceptionHandler excHandler = new ExceptionHandler();
         if (args.length == 1)
