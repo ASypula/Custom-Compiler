@@ -5,10 +5,7 @@ import tkom.common.tokens.Token;
 import tkom.common.tokens.TokenType;
 import tkom.components.*;
 import tkom.components.expressions.*;
-import tkom.components.statements.IStatement;
-import tkom.components.statements.IfStatement;
-import tkom.components.statements.ReturnStatement;
-import tkom.components.statements.WhileStatement;
+import tkom.components.statements.*;
 import tkom.exception.ExceededLimitsException;
 import tkom.exception.InvalidTokenException;
 import tkom.exception.MissingPartException;
@@ -51,14 +48,6 @@ public class Parser {
         return currToken.getType() == tType;
     }
 
-    /**
-     * ojoj
-     * @param tType
-     * @return
-     * @throws InvalidTokenException
-     * @throws ExceededLimitsException
-     * @throws IOException
-     */
     private boolean consumeIfToken(TokenType tType) throws InvalidTokenException, ExceededLimitsException, IOException {
         if (!isCurrToken(tType))
             return false;
@@ -135,8 +124,11 @@ public class Parser {
 
     //TODO: finish
     private IExpression parsePrimExpression() throws InvalidTokenException, IOException, ExceededLimitsException {
+        boolean isNegated = false;
+        Token negatedToken = null;
         if (isCurrToken(TokenType.T_NOT) || isCurrToken(TokenType.T_MINUS)){
-            // do sth
+            isNegated = true;
+            negatedToken = currToken;
             nextToken();
         }
         if (parseLiteral() || cos()){
@@ -153,8 +145,6 @@ public class Parser {
 
     /**
      * Parse: “if”, “(“, expr, “)”, block, [“else”, block];
-     * @return
-     * @throws InvalidTokenException
      */
     private IStatement parseIfStatement() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         if (!consumeIfToken(TokenType.T_IF))
@@ -175,7 +165,6 @@ public class Parser {
 
     /**
      * Parse: “while”, “(“, expr, “)”, block;
-     * @return
      */
     private IStatement parseWhileStatement() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         if (!consumeIfToken(TokenType.T_WHILE))
@@ -193,9 +182,6 @@ public class Parser {
 
     /**
      * Parse: “return”, expr, “;”;
-     * @return
-     * @throws InvalidTokenException
-     * @throws IOException
      */
     private IStatement parseReturnStatement() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         if (!consumeIfToken(TokenType.T_RETURN))
@@ -211,32 +197,82 @@ public class Parser {
     /**
      * Parse: “=”, expr;
      */
-    //TODO what about creating new types e.g. Line?
-    private boolean parseAssignStatement() throws InvalidTokenException, IOException {
-        if (!isCurrToken(TokenType.T_EQUALS))
-            return false;
-        nextToken();
-        if (parseExpression() || parseString());
-        return false;
+    private IStatement parseAssignStatement(String identifier) throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
+        if (!consumeIfToken(TokenType.T_EQUALS))
+            return null;
+        IExpression expr = parseExpression();
+        return new AssignStatement(identifier, expr);
     }
 
     /**
-     * Parse: identifier, ( assign_stmt | func_call ), “;”;
-     * @return
-     * @throws InvalidTokenException
-     * @throws IOException
+     * Parse rest_func_call	= ‘(‘, [args], ‘)’, ';' ;
      */
-    private boolean parseAssignStmtOrFunctionCall() throws InvalidTokenException, IOException, ExceededLimitsException {
-        if (!isCurrToken(TokenType.T_IDENT))
-            return false;
-        nextToken();
-        if (parseAssignStatement() || parseFunctionCall());
-        if (!isCurrToken(TokenType.T_SEMICOLON))
-            throw new InvalidTokenException(currToken, TokenType.T_SEMICOLON);
-        nextToken();
-        return true;
+    private IStatement parseRestFuncCall(String name) throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
+        if (!consumeIfToken(TokenType.T_REG_BRACKET_L))
+            return null;
+        IExpression expr = parseExpression();
+        if (expr == null)
+            throw new MissingPartException(currToken, "expression", "FunctionCall");
+        ArrayList<IExpression> expressionArrayList = new ArrayList<>();
+        expressionArrayList.add(expr);
+        while (consumeIfToken(TokenType.T_COLON)) {
+            expr = parseExpression();
+            if (expr == null)
+                throw new MissingPartException(currToken, "function argument", "FunctionCall");
+            expressionArrayList.add(expr);
+        }
+        if (!consumeIfToken(TokenType.T_REG_BRACKET_R))
+            throw new MissingPartException(currToken, "bracket )", "FunctionCall arguments");
+        return new FunctionCall(name, expressionArrayList);
     }
 
+    //TODO: finish, what kind of a class to use?
+    // rest_obj_access 	=  ‘.’, identifier, [ rest_func_call ], { ‘.’, identifier, [ rest_func_call ] }  ;
+    private IStatement parseObjectAccess(String ident) {
+        if (!isCurrToken(TokenType.T_DOT))
+            return null;
+        return null;
+    }
+
+    private IStatement parseIdentStartStmt() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
+        if (!isCurrToken(TokenType.T_IDENT))
+            return null;
+        String identifier = currToken.getStringValue();
+        nextToken();
+        IStatement stmt = parseAssignStatement(identifier);
+        if (stmt != null)
+            return stmt;
+        stmt = parseRestFuncCall(identifier);
+        if (stmt != null)
+            return stmt;
+        return parseObjectAccess(identifier);
+
+    }
+
+    /**
+     * Parse print_stmt	= “print”, “(“, (string | identifier), “)”, ‘;’ ;
+     */
+    private IStatement parsePrintStatement() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
+        if (!consumeIfToken(TokenType.T_PRINT))
+            return null;
+        if (!consumeIfToken(TokenType.T_REG_BRACKET_L))
+            throw new MissingPartException(currToken, "bracket (", "PrintStatement");
+        if (!isCurrToken(TokenType.T_IDENT) || !isCurrToken(TokenType.T_STRING))
+            throw new MissingPartException(currToken, "string or identifier", "PrintStatement");
+        TokenType t = currToken.getType();
+        String textOrIdent = currToken.getStringValue();
+        nextToken();
+        if (!consumeIfToken(TokenType.T_REG_BRACKET_R))
+            throw new MissingPartException(currToken, "bracket )", "PrintStatement");
+        if (!consumeIfToken(TokenType.T_SEMICOLON))
+            throw new MissingPartException(currToken, "semicolon ;", "PrintStatement");
+        return new PrintStatement(t, textOrIdent);
+    }
+
+
+    /**
+     * Parse: stmt = if_stmt | while_stmt | return_stmt | print_stmt | ident_start_stmt;
+     */
     private IStatement parseStatement() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         IStatement stmt = parseIfStatement();
         if (stmt != null)
@@ -247,17 +283,14 @@ public class Parser {
         stmt = parseReturnStatement();
         if (stmt != null)
             return stmt;
-        stmt = parseAssignStmtOrFunctionCall();
+        stmt = parsePrintStatement();
         if (stmt != null)
             return stmt;
-        return parsePrintStatement();
+        return parseIdentStartStmt();
     }
 
     /**
-     * Parse: “{“, { statement }, “}”;
-     * @return
-     * @throws InvalidTokenException
-     * @throws IOException
+     * Parse block: “{“, { statement }, “}”;
      */
     private Block parseBlock() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         if (!consumeIfToken(TokenType.T_CURLY_BRACKET_L))
@@ -274,6 +307,9 @@ public class Parser {
         return new Block(statements);
     }
 
+    /**
+     * Checks if given name is present in the provided parameters list
+     */
     private boolean containsName(ArrayList<Parameter> list, String name){
         List<String> containsList = list.stream()
                 .map(s -> s.name)
@@ -281,6 +317,9 @@ public class Parser {
         return !(containsList.size() == 0);
     }
 
+    /**
+     * Parses parameters to function definition: identifier, { “,”, identifier };
+     */
     private ArrayList<Parameter> parseParameters() throws InvalidTokenException, ExceededLimitsException, IOException {
         ArrayList<Parameter> params = new ArrayList<>();
         if (isCurrToken(TokenType.T_IDENT)) {
@@ -301,10 +340,6 @@ public class Parser {
 
     /**
      * Parses: “function”, identifier, “(“, [ params ], “)”, block;
-     * @param functions
-     * @return
-     * @throws InvalidTokenException
-     * @throws IOException
      */
     private boolean parseFuncDef(HashMap<String, FunctionDef> functions) throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         if (isCurrToken(TokenType.T_EOF))
@@ -330,10 +365,8 @@ public class Parser {
     /**
      * Parse the given program as long as the EOF is not encountered
      * @return      parsed program
-     * @throws InvalidTokenException
-     * @throws IOException
      */
-    public Program parse() throws InvalidTokenException, IOException, ExceededLimitsException {
+    public Program parse() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         HashMap<String, FunctionDef> functions = new HashMap<>();
         while (parseFuncDef(functions));
         return new Program(functions);
