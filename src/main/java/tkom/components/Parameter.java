@@ -1,7 +1,5 @@
 package tkom.components;
 
-import tkom.parser.Parser;
-
 public class Parameter {
     public String name;
 

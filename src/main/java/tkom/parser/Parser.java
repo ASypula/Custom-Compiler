@@ -12,10 +12,10 @@ import tkom.exception.MissingPartException;
 import tkom.lexer.Lexer;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static tkom.common.tokens.TokenMap.T_KEYWORDS;
 
 public class Parser {
     Lexer lexer;
@@ -23,6 +23,9 @@ public class Parser {
 
     TokenType[] relationOpArray = {TokenType.T_EQUALS, TokenType.T_GREATER, TokenType.T_GREATER_OR_EQ,
             TokenType.T_LESS, TokenType.T_LESS_OR_EQ, TokenType.T_NOT_EQ};
+
+    TokenType[] classTokens = {TokenType.T_FIGURE, TokenType.T_FIG_COLL, TokenType.T_LINE,
+            TokenType.T_LIST, TokenType.T_POINT};
     public ExceptionHandler excHandler;
     public Parser(Lexer lex, ExceptionHandler eh){
 
@@ -55,11 +58,22 @@ public class Parser {
         return true;
     }
 
+    public static <T, E> Set<T> getKeysByValue(Map<T, E> map, E value) {
+        return map.entrySet()
+                .stream()
+                .filter(entry -> Objects.equals(entry.getValue(), value))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+    }
+
     private boolean parseLiteral(){
         return (isCurrToken(TokenType.T_INT) || isCurrToken(TokenType.T_DOUBLE) ||
         isCurrToken(TokenType.T_STRING) || isCurrToken(TokenType.T_TRUE) || isCurrToken(TokenType.T_FALSE));
     }
 
+    /**
+     * Parse: mult _expr = prim _expr, { (“*” | “/“) prim _expr };
+     */
     private IExpression parseMultExpression() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         IExpression left = parsePrimExpression();
         if (isCurrToken(TokenType.T_MULT) || isCurrToken(TokenType.T_DIV)){
@@ -72,8 +86,10 @@ public class Parser {
         }
         return left;
     }
-    }
 
+    /**
+     * Parse: arithm _expr = mult_expr, { (“+” | “-“) mult_expr };
+     */
     private IExpression parseArithmExpression() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
         IExpression left = parseMultExpression();
         if (isCurrToken(TokenType.T_PLUS) || isCurrToken(TokenType.T_MINUS)){
@@ -87,6 +103,9 @@ public class Parser {
         return left;
     }
 
+    /**
+     * Parse: rel_expr = arithm_expr, { rel_operator, arithm_expr };
+     */
     private IExpression parseRelExpression() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
         IExpression left = parseArithmExpression();
         if (Arrays.asList(relationOpArray).contains(currToken.getType())){
@@ -100,6 +119,9 @@ public class Parser {
         return left;
     }
 
+    /**
+     * Parse: and_expr = rel_expr, {“&&”, rel_expr };
+     */
     private IExpression parseAndExpression() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
         IExpression left = parseRelExpression();
         while (consumeIfToken(TokenType.T_AND)){
@@ -111,6 +133,9 @@ public class Parser {
         return left;
     }
 
+    /**
+     * Parse: expr = and_expr, { “||”, and_expr };
+     */
     private IExpression parseExpression() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
         IExpression left = parseAndExpression();
         while (consumeIfToken(TokenType.T_OR)){
@@ -122,8 +147,14 @@ public class Parser {
         return left;
     }
 
+    /**
+     * Parse: prim_expr = [ negation ], ( literal | ident_start_stmt | “(“, expr, “)” );
+     */
     //TODO: finish
-    private IExpression parsePrimExpression() throws InvalidTokenException, IOException, ExceededLimitsException {
+    // additional class?
+    // What attributes the class should have?
+    // What type should be included inside the returned object?
+    private IExpression parsePrimExpression() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         boolean isNegated = false;
         Token negatedToken = null;
         if (isCurrToken(TokenType.T_NOT) || isCurrToken(TokenType.T_MINUS)){
@@ -131,16 +162,21 @@ public class Parser {
             negatedToken = currToken;
             nextToken();
         }
-        if (parseLiteral() || cos()){
+        IStatement stmt = parseIdentStartStmt();
+        if (stmt != null){
+            //TODO: do sth
+        }
+        else if (parseLiteral()){
             ;
         }
         else if (consumeIfToken(TokenType.T_REG_BRACKET_L)){
-            parseExpression();
+            IExpression expr = parseExpression();
             if (!consumeIfToken(TokenType.T_REG_BRACKET_R))
-                return false;
+                throw new InvalidTokenException(currToken, TokenType.T_REG_BRACKET_R);
         }
-
-        return false;
+        else
+            throw new MissingPartException(currToken, "TODO", "PrimExpression");
+        return null;
     }
 
     /**
@@ -206,6 +242,7 @@ public class Parser {
 
     /**
      * Parse rest_func_call	= ‘(‘, [args], ‘)’, ';' ;
+     * args = expr, { “,”, expr } ;
      */
     private IStatement parseRestFuncCall(String name) throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
         if (!consumeIfToken(TokenType.T_REG_BRACKET_L))
@@ -227,17 +264,26 @@ public class Parser {
     }
 
     //TODO: finish, what kind of a class to use?
-    // rest_obj_access 	=  ‘.’, identifier, [ rest_func_call ], { ‘.’, identifier, [ rest_func_call ] }  ;
+    /**
+     * Parse: rest_obj_access 	=  ‘.’, identifier, [ rest_func_call ], { ‘.’, identifier, [ rest_func_call ] }  ;
+     */
     private IStatement parseObjectAccess(String ident) {
         if (!isCurrToken(TokenType.T_DOT))
             return null;
         return null;
     }
 
+    /**
+     * Parse ident_start_stmt = identifier, { assign_stmt | rest_func_call | rest_obj_access };
+     */
     private IStatement parseIdentStartStmt() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
-        if (!isCurrToken(TokenType.T_IDENT))
+        if (!isCurrToken(TokenType.T_IDENT) || !Arrays.asList(classTokens).contains(currToken.getType()))
             return null;
-        String identifier = currToken.getStringValue();
+        String identifier;
+        if (isCurrToken(TokenType.T_IDENT))
+            identifier = currToken.getStringValue();
+        else
+            identifier = getKeysByValue(T_KEYWORDS, currToken.getType()).iterator().next();
         nextToken();
         IStatement stmt = parseAssignStatement(identifier);
         if (stmt != null)
@@ -246,7 +292,6 @@ public class Parser {
         if (stmt != null)
             return stmt;
         return parseObjectAccess(identifier);
-
     }
 
     /**
@@ -320,7 +365,7 @@ public class Parser {
     /**
      * Parses parameters to function definition: identifier, { “,”, identifier };
      */
-    private ArrayList<Parameter> parseParameters() throws InvalidTokenException, ExceededLimitsException, IOException {
+    private ArrayList<Parameter> parseParameters() throws Exception {
         ArrayList<Parameter> params = new ArrayList<>();
         if (isCurrToken(TokenType.T_IDENT)) {
             params.add(new Parameter(currToken.getStringValue()));
@@ -329,7 +374,7 @@ public class Parser {
                 if (isCurrToken(TokenType.T_IDENT)) {
                     String name = currToken.getStringValue();
                     if (containsName(params, name))
-                        throw Exception("TODO different exception");
+                        throw new Exception("TODO different exception");
                     params.add(new Parameter(name));
                     nextToken();
                 }
@@ -341,7 +386,7 @@ public class Parser {
     /**
      * Parses: “function”, identifier, “(“, [ params ], “)”, block;
      */
-    private boolean parseFuncDef(HashMap<String, FunctionDef> functions) throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
+    private boolean parseFuncDef(HashMap<String, FunctionDef> functions) throws Exception {
         if (isCurrToken(TokenType.T_EOF))
             return false;
         nextToken();
@@ -366,7 +411,7 @@ public class Parser {
      * Parse the given program as long as the EOF is not encountered
      * @return      parsed program
      */
-    public Program parse() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
+    public Program parse() throws Exception {
         HashMap<String, FunctionDef> functions = new HashMap<>();
         while (parseFuncDef(functions));
         return new Program(functions);
