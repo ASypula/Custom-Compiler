@@ -510,11 +510,11 @@ public class LexerTest {
     public void test_Sequence1() throws IOException, InvalidTokenException, ExceededLimitsException {
         ArrayList<Token> expectedTokens = new ArrayList<>();
         expectedTokens.add(new Token(TokenType.T_WHILE, new Position(0,0)));
-        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_L, new Position(5,0)));
-        expectedTokens.add(new Token(TokenType.T_IDENT, new Position(6,0)));
-        expectedTokens.add(new Token(TokenType.T_LESS, new Position(7,0)));
-        expectedTokens.add(new Token(TokenType.T_INT, new Position(8,0)));
-        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_R, new Position(10,0)));
+        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_L, new Position(6,0)));
+        expectedTokens.add(new Token(TokenType.T_IDENT, new Position(7,0)));
+        expectedTokens.add(new Token(TokenType.T_LESS, new Position(9,0)));
+        expectedTokens.add(new Token(TokenType.T_INT, new Position(10,0)));
+        expectedTokens.add(new Token(TokenType.T_REG_BRACKET_R, new Position(12,0)));
         expectedTokens.add(new Token(TokenType.T_PRINT, new Position(0,1)));
         expectedTokens.add(new Token(TokenType.T_REG_BRACKET_L, new Position(5,1)));
         expectedTokens.add(new Token(TokenType.T_STRING, new Position(6,1)));

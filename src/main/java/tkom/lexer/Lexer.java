@@ -129,14 +129,16 @@ public class Lexer {
         Position firstPos = new Position(br.currPos.rowNo, br.currPos.colNo);
         StringBuilder builder = new StringBuilder();
         builder.append(currChar);
-        nextChar();
+        nextCharCommText();
         while (running && (Character.isLetterOrDigit(currChar) || currChar == '_') && identLen<=MAX_LENGTH){
             identLen++;
             builder.append(currChar);
-            nextChar();
+            nextCharCommText();
         }
         if (identLen > MAX_LENGTH)
             throw new ExceededLimitsException(firstPos, builder.toString(), MAX_LENGTH);
+        if (currChar == ' ')
+            nextChar();
         String newString = builder.toString();
         if (T_KEYWORDS.containsKey(newString))
             currToken = new Token(T_KEYWORDS.get(newString), firstPos);
@@ -264,7 +266,6 @@ public class Lexer {
             // This may be a start of escape character
             if (currChar == '\\') {
                 nextCharCommText();
-                //TODO: done
                 if (T_ESCAPECHARS.containsKey(currChar))
                     builder.append(T_ESCAPECHARS.get(currChar));
                 else{
