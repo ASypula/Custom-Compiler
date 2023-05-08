@@ -1,13 +1,36 @@
 package tkom.components.expressions;
 
-public class PrimExpression implements IExpression{
-    boolean negated;
-    //TODO: remove isLiteral
-    boolean isLiteral;
+import tkom.common.ParserComponentTypes.ExpressionType;
+import tkom.components.Literal;
+import tkom.components.statements.IStatement;
+import tkom.components.statements.IfStatement;
 
-    public PrimExpression(boolean isNegated, boolean literal){
+public class PrimExpression implements IExpression{
+    public boolean negated;
+
+    public Literal literal = null;
+    public IStatement stmt = null;
+    public IExpression expr = null;
+
+    public ExpressionType type;
+
+
+    public PrimExpression(boolean isNegated, Literal lit){
         negated = isNegated;
-        isLiteral = literal;
+        literal = lit;
+        type = ExpressionType.E_LITERAL;
+    }
+
+    public PrimExpression(boolean isNegated, IStatement st){
+        negated = isNegated;
+        stmt = st;
+        type = ExpressionType.E_STMT;
+    }
+
+    public PrimExpression(boolean isNegated, IExpression exp){
+        negated = isNegated;
+        expr = exp;
+        type = ExpressionType.E_EXPR;
     }
 
 }

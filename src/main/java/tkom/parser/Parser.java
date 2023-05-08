@@ -1,6 +1,7 @@
 package tkom.parser;
 
 import tkom.common.ExceptionHandler;
+import tkom.common.ParserComponentTypes.LiteralType;
 import tkom.common.tokens.Token;
 import tkom.common.tokens.TokenType;
 import tkom.components.*;
@@ -66,9 +67,24 @@ public class Parser {
                 .collect(Collectors.toSet());
     }
 
-    private boolean parseLiteral(){
-        return (isCurrToken(TokenType.T_INT) || isCurrToken(TokenType.T_DOUBLE) || isCurrToken(TokenType.T_IDENT) ||
-        isCurrToken(TokenType.T_STRING) || isCurrToken(TokenType.T_TRUE) || isCurrToken(TokenType.T_FALSE));
+    /**
+     * Parse: literal = bool | integer | double | string | identifier;
+     */
+    private Literal parseLiteral(){
+        if (isCurrToken(TokenType.T_INT))
+            return new Literal(currToken.getIntValue());
+        else if (isCurrToken(TokenType.T_DOUBLE))
+            return new Literal(currToken.getDoubleValue());
+        else if (isCurrToken(TokenType.T_STRING))
+            return new Literal(currToken.getStringValue(), LiteralType.L_STRING);
+        else if (isCurrToken(TokenType.T_IDENT))
+            return new Literal(currToken.getStringValue(), LiteralType.L_IDENT);
+        else if (isCurrToken(TokenType.T_TRUE))
+            return new Literal(true);
+        else if (isCurrToken(TokenType.T_FALSE))
+            return new Literal(false);
+        else
+            return null;
     }
 
     /**
@@ -82,7 +98,10 @@ public class Parser {
             IExpression right = parsePrimExpression();
             if (right == null)
                 throw new MissingPartException(currToken, "right PrimExpression", "MultExpression");
-            left = new MultExpression(left, right, signToken);
+            if (signToken.getType() == TokenType.T_MULT)
+                left = new MultExpression(left, right, false);
+            else
+                left = new MultExpression(left, right, true);
         }
         return left;
     }
@@ -98,7 +117,10 @@ public class Parser {
             IExpression right = parseMultExpression();
             if (right == null)
                 throw new MissingPartException(currToken, "right MultExpression", "ArithmExpression");
-            left = new ArithmExpression(left, right, signToken);
+            if (signToken.getType() == TokenType.T_PLUS)
+                left = new ArithmExpression(left, right, false);
+            else
+                left = new ArithmExpression(left, right, true);
         }
         return left;
     }
@@ -156,30 +178,29 @@ public class Parser {
     // What type should be included inside the returned object?
     private IExpression parsePrimExpression() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         boolean isNegated = false;
-        //TODO: remove isLiteral
-        boolean isLiteral = false;
-        Token negatedToken = null;
         if (isCurrToken(TokenType.T_NOT) || isCurrToken(TokenType.T_MINUS)){
             isNegated = true;
-            negatedToken = currToken;
             nextToken();
         }
         IStatement stmt = parseIdentStartStmt();
         if (stmt != null){
+            if (stmt instanceof LiteralStatement)
+                return new PrimExpression(isNegated, new Literal(((LiteralStatement) stmt).getIdentifier(), LiteralType.L_IDENT));
             //TODO: do sth
         }
-        else if (parseLiteral()){
-            isLiteral = true;
+        Literal literal = parseLiteral();
+        if (literal != null){
             nextToken();
+            return new PrimExpression(isNegated, literal);
         }
         else if (consumeIfToken(TokenType.T_REG_BRACKET_L)){
             IExpression expr = parseExpression();
             if (!consumeIfToken(TokenType.T_REG_BRACKET_R))
                 throw new InvalidTokenException(currToken, TokenType.T_REG_BRACKET_R);
+            return new PrimExpression(isNegated, expr);
         }
         else
             throw new MissingPartException(currToken, "TODO", "PrimExpression");
-        return new PrimExpression(isNegated, isLiteral);
     }
 
     /**
@@ -298,7 +319,10 @@ public class Parser {
         stmt = parseRestFuncCall(identifier);
         if (stmt != null)
             return stmt;
-        return parseObjectAccess(identifier);
+        stmt = parseObjectAccess(identifier);
+        if (stmt != null)
+            return stmt;
+        return new LiteralStatement(identifier);
     }
 
     /**

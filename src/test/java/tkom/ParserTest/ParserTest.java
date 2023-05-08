@@ -2,6 +2,7 @@ package tkom.ParserTest;
 
 import org.junit.Test;
 import tkom.common.ExceptionHandler;
+import tkom.common.ParserComponentTypes.ExpressionType;
 import tkom.components.FunctionDef;
 import tkom.components.Parameter;
 import tkom.components.Program;
@@ -50,6 +51,13 @@ public class ParserTest {
         myParser.nextToken();
         IExpression expr = myParser.parseExpression();
         assertThat(expr, instanceOf(MultExpression.class));
+        assertEquals(((MultExpression)expr).isDivision(), false);
+        assertThat(((MultExpression)expr).left, instanceOf(PrimExpression.class));
+        PrimExpression leftExpr = (PrimExpression)((MultExpression)expr).left;
+        PrimExpression rightExpr = (PrimExpression)((MultExpression)expr).right;
+        assertEquals(leftExpr.type, ExpressionType.E_LITERAL);
+        assertEquals(leftExpr.literal.getIntValue(), 2);
+        assertEquals(rightExpr.literal.getIntValue(), 5);
     }
 
     @Test
@@ -59,6 +67,13 @@ public class ParserTest {
         myParser.nextToken();
         IExpression expr = myParser.parseExpression();
         assertThat(expr, instanceOf(MultExpression.class));
+        assertEquals(((MultExpression)expr).isDivision(), true);
+        assertThat(((MultExpression)expr).left, instanceOf(PrimExpression.class));
+        PrimExpression leftExpr = (PrimExpression)((MultExpression)expr).left;
+        PrimExpression rightExpr = (PrimExpression)((MultExpression)expr).right;
+        assertEquals(leftExpr.type, ExpressionType.E_LITERAL);
+        assertEquals(leftExpr.literal.getIntValue(), 2);
+        assertEquals(rightExpr.literal.getIntValue(), 5);
     }
 
     @Test
@@ -68,15 +83,29 @@ public class ParserTest {
         myParser.nextToken();
         IExpression expr = myParser.parseExpression();
         assertThat(expr, instanceOf(ArithmExpression.class));
+        assertEquals(((ArithmExpression)expr).isSubtraction(), false);
+        assertThat(((ArithmExpression)expr).left, instanceOf(PrimExpression.class));
+        PrimExpression leftExpr = (PrimExpression)((ArithmExpression)expr).left;
+        PrimExpression rightExpr = (PrimExpression)((ArithmExpression)expr).right;
+        assertEquals(leftExpr.type, ExpressionType.E_LITERAL);
+        assertEquals(leftExpr.literal.getIntValue(), 2);
+        assertEquals(rightExpr.literal.getIntValue(), 5);
     }
 
     @Test
     public void test_ArithmeticExpressionSubtractionOp() throws Exception {
-        String x = "2-5";
+        String x = "2-5.4";
         initParser(x);
         myParser.nextToken();
         IExpression expr = myParser.parseExpression();
         assertThat(expr, instanceOf(ArithmExpression.class));
+        assertEquals(((ArithmExpression)expr).isSubtraction(), true);
+        assertThat(((ArithmExpression)expr).left, instanceOf(PrimExpression.class));
+        PrimExpression leftExpr = (PrimExpression)((ArithmExpression)expr).left;
+        PrimExpression rightExpr = (PrimExpression)((ArithmExpression)expr).right;
+        assertEquals(leftExpr.type, ExpressionType.E_LITERAL);
+        assertEquals(leftExpr.literal.getIntValue(), 2);
+        assertEquals(rightExpr.literal.getDoubleValue(), 5.4, 10^-6);
     }
 
 //    @Test
