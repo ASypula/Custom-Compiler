@@ -1,6 +1,7 @@
 package tkom.components;
 
 import tkom.common.ParserComponentTypes.LiteralType;
+import tkom.common.tokens.TokenType;
 import tkom.exception.InvalidMethodException;
 import tkom.exception.MissingPartException;
 
@@ -11,6 +12,11 @@ public class Literal {
     String text;
     boolean bool;
 
+    TokenType tokenType;
+
+    public LiteralType getType(){
+        return type;
+    }
     public Literal(int nr){
         number = nr;
         type = LiteralType.L_INT;
@@ -24,6 +30,12 @@ public class Literal {
     public Literal(String txt, LiteralType lType){
         type = lType;
         text = txt;
+    }
+
+    public Literal(String txt, LiteralType lType, TokenType tType){
+        type = lType;
+        text = txt;
+        tokenType = tType;
     }
 
     public Literal(boolean val){
@@ -43,5 +55,33 @@ public class Literal {
             return value;
         else
             throw new InvalidMethodException("Literal", "double value");
+    }
+
+    public boolean getBoolValue() throws InvalidMethodException {
+        if (type == LiteralType.L_BOOL)
+            return bool;
+        else
+            throw new InvalidMethodException("Literal", "bool value");
+    }
+
+    public String getIdentifierValue() throws InvalidMethodException {
+        if (type == LiteralType.L_IDENT)
+            return text;
+        else
+            throw new InvalidMethodException("Literal", "identifier value");
+    }
+
+    public String getStringValue() throws InvalidMethodException {
+        if (type == LiteralType.L_STRING)
+            return text;
+        else
+            throw new InvalidMethodException("Literal", "string value");
+    }
+
+    public TokenType getTokenType() throws InvalidMethodException {
+        if (type == LiteralType.L_CLASS)
+            return tokenType;
+        else
+            throw new InvalidMethodException("Literal", "token type");
     }
 }

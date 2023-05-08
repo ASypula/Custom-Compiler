@@ -70,7 +70,7 @@ public class Parser {
     /**
      * Parse: literal = bool | integer | double | string | identifier;
      */
-    private Literal parseLiteral(){
+    public Literal parseLiteral(){
         if (isCurrToken(TokenType.T_INT))
             return new Literal(currToken.getIntValue());
         else if (isCurrToken(TokenType.T_DOUBLE))
@@ -79,6 +79,8 @@ public class Parser {
             return new Literal(currToken.getStringValue(), LiteralType.L_STRING);
         else if (isCurrToken(TokenType.T_IDENT))
             return new Literal(currToken.getStringValue(), LiteralType.L_IDENT);
+        else if (Arrays.asList(classTokens).contains(currToken.getType()))
+            return new Literal(currToken.getStringValue(), LiteralType.L_CLASS, currToken.getType());
         else if (isCurrToken(TokenType.T_TRUE))
             return new Literal(true);
         else if (isCurrToken(TokenType.T_FALSE))

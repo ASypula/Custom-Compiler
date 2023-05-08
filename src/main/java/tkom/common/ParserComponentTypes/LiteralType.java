@@ -5,5 +5,6 @@ public enum LiteralType {
     L_DOUBLE,
     L_IDENT,
     L_BOOL,
-    L_STRING
+    L_STRING,
+    L_CLASS
 }
