@@ -204,7 +204,8 @@ public class Parser {
             return new PrimExpression(isNegated, expr);
         }
         else
-            throw new MissingPartException(currToken, "TODO", "PrimExpression");
+            return null;
+            //throw new MissingPartException(currToken, "TODO", "PrimExpression");
     }
 
     /**
@@ -275,17 +276,16 @@ public class Parser {
     private IStatement parseRestFuncCall(String name) throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
         if (!consumeIfToken(TokenType.T_REG_BRACKET_L))
             return null;
-        IExpression expr = parseExpression();
-        if (expr == null)
-            throw new MissingPartException(currToken, "expression", "FunctionCall");
         ArrayList<IExpression> expressionArrayList = new ArrayList<>();
-        expressionArrayList.add(expr);
-        while (consumeIfToken(TokenType.T_COLON)) {
-            expr = parseExpression();
-            if (expr == null)
-                throw new MissingPartException(currToken, "function argument", "FunctionCall");
+        IExpression expr = parseExpression();
+        if (expr != null)
             expressionArrayList.add(expr);
-        }
+            while (consumeIfToken(TokenType.T_COLON)) {
+                expr = parseExpression();
+                if (expr == null)
+                    throw new MissingPartException(currToken, "function argument", "FunctionCall");
+                expressionArrayList.add(expr);
+            }
         if (!consumeIfToken(TokenType.T_REG_BRACKET_R))
             throw new MissingPartException(currToken, "bracket )", "FunctionCall arguments");
         return new FunctionCall(name, expressionArrayList);

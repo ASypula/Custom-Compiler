@@ -353,6 +353,22 @@ public class ParserTest {
         IStatement stmt = myParser.parseStatement();
         assertThat(stmt, instanceOf(PrintStatement.class));
     }
+    @Test
+    public void test_StmtFunctionCall() throws Exception {
+        String x = "hello(x);";
+        initParser(x);
+        myParser.nextToken();
+        IStatement stmt = myParser.parseStatement();
+        assertThat(stmt, instanceOf(FunctionCall.class));
+    }
+    @Test
+    public void test_StmtFunctionCallNoParams() throws Exception {
+        String x = "hello();";
+        initParser(x);
+        myParser.nextToken();
+        IStatement stmt = myParser.parseStatement();
+        assertThat(stmt, instanceOf(FunctionCall.class));
+    }
 
     @Test
     public void test_Parameters() throws Exception {
