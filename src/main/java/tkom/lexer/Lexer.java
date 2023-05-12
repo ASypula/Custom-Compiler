@@ -21,7 +21,7 @@ import static tkom.common.tokens.TokenMap.*;
 //different error classes
 //change of name buildIdentifier -> buildIdentifierOrKeyword
 
-public class Lexer {
+public class Lexer implements ILexer{
     boolean running;    // set to true as long as EOF is not encountered
     BuffReader br;
     public ExceptionHandler excHandler;

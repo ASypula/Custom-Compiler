@@ -10,6 +10,7 @@ import tkom.components.statements.*;
 import tkom.exception.ExceededLimitsException;
 import tkom.exception.InvalidTokenException;
 import tkom.exception.MissingPartException;
+import tkom.lexer.ILexer;
 import tkom.lexer.Lexer;
 
 import java.io.IOException;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 import static tkom.common.tokens.TokenMap.T_KEYWORDS;
 
 public class Parser {
-    Lexer lexer;
+    ILexer lexer;
     Token currToken;
 
     TokenType[] relationOpArray = {TokenType.T_EQUALS, TokenType.T_GREATER, TokenType.T_GREATER_OR_EQ,
@@ -28,7 +29,7 @@ public class Parser {
     TokenType[] classTokens = {TokenType.T_FIGURE, TokenType.T_FIG_COLL, TokenType.T_LINE,
             TokenType.T_LIST, TokenType.T_POINT};
     public ExceptionHandler excHandler;
-    public Parser(Lexer lex, ExceptionHandler eh){
+    public Parser(ILexer lex, ExceptionHandler eh){
 
         lexer = lex;
         excHandler = eh;
@@ -263,8 +264,6 @@ public class Parser {
         if (!consumeIfToken(TokenType.T_ASSIGN))
             return null;
         IExpression expr = parseExpression();
-        if (!consumeIfToken( TokenType.T_SEMICOLON))
-            throw new MissingPartException(currToken, "semicolon ';'", "assign statement");
         return new AssignStatement(identifier, expr);
     }
 
@@ -295,16 +294,15 @@ public class Parser {
     /**
      * Parse: rest_obj_access 	=  ‘.’, identifier, [ rest_func_call ], { ‘.’, identifier, [ rest_func_call ] }  ;
      */
-    private IStatement parseObjectAccess(String ident) throws InvalidTokenException, ExceededLimitsException, IOException {
+    private IStatement parseObjectAccess(String ident) throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
         if (!isCurrToken(TokenType.T_DOT))
             return null;
-//        if (!consumeIfToken(TokenType.T_SEMICOLON))
-//            throw new MissingPartException(currToken, "bracket (", "PrintStatement");
-        return null;
+        IExpression expr = parseExpression();
+        return new ObjectAccess(ident, expr);
     }
 
     /**
-     * Parse ident_start_stmt = identifier, { assign_stmt | rest_func_call | rest_obj_access };
+     * Parse ident_start_stmt = identifier, { assign_stmt | rest_func_call | rest_obj_access }, ';';
      */
     private IStatement parseIdentStartStmt() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
         if (!isCurrToken(TokenType.T_IDENT) && !Arrays.asList(classTokens).contains(currToken.getType()))
@@ -324,7 +322,10 @@ public class Parser {
         stmt = parseObjectAccess(identifier);
         if (stmt != null)
             return stmt;
-        return new LiteralStatement(identifier);
+        stmt = new LiteralStatement(identifier);
+        if (!consumeIfToken( TokenType.T_SEMICOLON))
+            throw new MissingPartException(currToken, "semicolon ';'", "identifier start statement");
+        return stmt;
     }
 
     /**
