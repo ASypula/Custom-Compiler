@@ -10,4 +10,12 @@ public class AssignStatement implements IStatement {
         identifier = ident;
         right = expr;
     }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public IExpression getExpression(){
+        return right;
+    }
 }

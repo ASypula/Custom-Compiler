@@ -1,8 +1,8 @@
 package tkom.components.expressions;
 
 public class AndExpression implements IExpression{
-    IExpression left;
-    IExpression right;
+    public IExpression left;
+    public IExpression right;
 
     public AndExpression(IExpression l, IExpression r){
         left = l;

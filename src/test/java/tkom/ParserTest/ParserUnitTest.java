@@ -5,20 +5,16 @@ import tkom.common.ExceptionHandler;
 import tkom.common.ParserComponentTypes.ExpressionType;
 import tkom.common.ParserComponentTypes.LiteralType;
 import tkom.common.Position;
-import tkom.common.tokens.Token;
-import tkom.common.tokens.TokenInt;
-import tkom.common.tokens.TokenString;
-import tkom.common.tokens.TokenType;
+import tkom.common.tokens.*;
 import tkom.components.Literal;
 import tkom.components.expressions.ArithmExpression;
 import tkom.components.expressions.IExpression;
+import tkom.components.expressions.MultExpression;
 import tkom.components.expressions.PrimExpression;
 import tkom.exception.ExceededLimitsException;
 import tkom.exception.InvalidMethodException;
 import tkom.exception.InvalidTokenException;
 import tkom.exception.MissingPartException;
-import tkom.lexer.ILexer;
-import tkom.lexer.Lexer;
 import tkom.parser.Parser;
 
 import java.io.*;
@@ -70,6 +66,25 @@ public class ParserUnitTest {
     }
 
     @Test
+    public void test_multiplicationExpressionMultiplicationOp() throws Exception {
+        ArrayList<Token> tList = new ArrayList<>();
+        tList.add(new TokenInt(TokenType.T_INT, new Position(0, 0), 2));
+        tList.add(new Token(TokenType.T_MULT, new Position(0, 1)));
+        tList.add(new TokenInt(TokenType.T_INT, new Position(0, 2), 5));
+        initParser(tList);
+        myParser.nextToken();
+        IExpression expr = myParser.parseExpression();
+        assertThat(expr, instanceOf(MultExpression.class));
+        assertEquals(((MultExpression)expr).isDivision(), false);
+        assertThat(((MultExpression)expr).left, instanceOf(PrimExpression.class));
+        PrimExpression leftExpr = (PrimExpression)((MultExpression)expr).left;
+        PrimExpression rightExpr = (PrimExpression)((MultExpression)expr).right;
+        assertEquals(leftExpr.type, ExpressionType.E_LITERAL);
+        assertEquals(leftExpr.literal.getIntValue(), 2);
+        assertEquals(rightExpr.literal.getIntValue(), 5);
+    }
+
+    @Test
     public void test_ArithmeticExpressionAdditionOp() throws Exception {
         ArrayList<Token> tList = new ArrayList<>();
         tList.add(new TokenInt(TokenType.T_INT, new Position(0, 0), 2));
@@ -86,6 +101,27 @@ public class ParserUnitTest {
         assertEquals(leftExpr.type, ExpressionType.E_LITERAL);
         assertEquals(leftExpr.literal.getIntValue(), 2);
         assertEquals(rightExpr.literal.getIntValue(), 5);
+    }
+
+    @Test
+    public void test_ArithmeticExpressionSubtractionOpWithIdentInverse() throws Exception {
+        String x = "5.4-x";
+        ArrayList<Token> tList = new ArrayList<>();
+        tList.add(new TokenDouble(TokenType.T_DOUBLE, new Position(0, 0), 5.4));
+        tList.add(new Token(TokenType.T_MINUS, new Position(0, 1)));
+        tList.add(new TokenString(TokenType.T_IDENT, new Position(0, 2), "x"));
+        initParser(tList);
+        myParser.nextToken();
+        IExpression expr = myParser.parseExpression();
+        assertThat(expr, instanceOf(ArithmExpression.class));
+        assertEquals(((ArithmExpression)expr).isSubtraction(), true);
+        assertThat(((ArithmExpression)expr).left, instanceOf(PrimExpression.class));
+        PrimExpression leftExpr = (PrimExpression)((ArithmExpression)expr).left;
+        PrimExpression rightExpr = (PrimExpression)((ArithmExpression)expr).right;
+        assertEquals(rightExpr.type, ExpressionType.E_LITERAL);
+        assertEquals(rightExpr.literal.getIdentifierValue(), "x");
+        assertEquals(rightExpr.literal.getType(), LiteralType.L_IDENT);
+        assertEquals(leftExpr.literal.getDoubleValue(), 5.4, 10^-6);
     }
 
 }

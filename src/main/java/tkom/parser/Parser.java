@@ -8,6 +8,7 @@ import tkom.components.*;
 import tkom.components.expressions.*;
 import tkom.components.statements.*;
 import tkom.exception.ExceededLimitsException;
+import tkom.exception.InvalidMethodException;
 import tkom.exception.InvalidTokenException;
 import tkom.exception.MissingPartException;
 import tkom.lexer.ILexer;
@@ -323,8 +324,6 @@ public class Parser {
         if (stmt != null)
             return stmt;
         stmt = new LiteralStatement(identifier);
-        if (!consumeIfToken( TokenType.T_SEMICOLON))
-            throw new MissingPartException(currToken, "semicolon ';'", "identifier start statement");
         return stmt;
     }
 
@@ -343,8 +342,6 @@ public class Parser {
         nextToken();
         if (!consumeIfToken(TokenType.T_REG_BRACKET_R))
             throw new MissingPartException(currToken, "bracket )", "PrintStatement");
-        if (!consumeIfToken(TokenType.T_SEMICOLON))
-            throw new MissingPartException(currToken, "semicolon ;", "PrintStatement");
         return new PrintStatement(t, textOrIdent);
     }
 
@@ -365,7 +362,12 @@ public class Parser {
         stmt = parsePrintStatement();
         if (stmt != null)
             return stmt;
-        return parseIdentStartStmt();
+        stmt = parseIdentStartStmt();
+        if (stmt != null)
+            return stmt;
+        if (!consumeIfToken( TokenType.T_SEMICOLON))
+            throw new MissingPartException(currToken, "semicolon ';'", "the end of a statement");
+        return null;
     }
 
     /**
@@ -390,9 +392,14 @@ public class Parser {
      * Checks if given name is present in the provided parameters list
      */
     private boolean containsName(ArrayList<Parameter> list, String name){
+//        for (var param: list){
+//            if (param.name.equals(name))
+//                return true;
+//        }
+//        return false;
         List<String> containsList = list.stream()
                 .map(s -> s.name)
-                .filter(s -> s == name).toList();
+                .filter(s -> s.equals(name)).toList();
         return !(containsList.size() == 0);
     }
 
@@ -412,6 +419,8 @@ public class Parser {
                     params.add(new Parameter(name));
                     nextToken();
                 }
+                else
+                    throw new InvalidMethodException("Parameter ", " identifier value");
             }
         }
         return params;
@@ -423,7 +432,6 @@ public class Parser {
     public boolean parseFuncDef(HashMap<String, FunctionDef> functions) throws Exception {
         if (isCurrToken(TokenType.T_EOF))
             return false;
-        //nextToken();
         if (!consumeIfToken(TokenType.T_FUNCTION))
             throw new InvalidTokenException(currToken, TokenType.T_FUNCTION);
         if (!isCurrToken(TokenType.T_IDENT))
@@ -431,11 +439,11 @@ public class Parser {
         String name = currToken.getStringValue();
         nextToken();
         if (!consumeIfToken(TokenType.T_REG_BRACKET_L))
-            throw new InvalidTokenException(currToken, TokenType.T_REG_BRACKET_L);
+            throw new MissingPartException(currToken, "left bracket '('", "function definition");
         ArrayList<Parameter> params;
         params = parseParameters();
         if (!consumeIfToken(TokenType.T_REG_BRACKET_R))
-            throw new InvalidTokenException(currToken, TokenType.T_REG_BRACKET_R);
+            throw new MissingPartException(currToken, "right bracket ')'", "function definition");
         Block block = parseBlock();
         functions.put(name, new FunctionDef(name, params, block));
         return true;

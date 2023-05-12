@@ -5,10 +5,7 @@ import tkom.common.ExceptionHandler;
 import tkom.common.ParserComponentTypes.ExpressionType;
 import tkom.common.ParserComponentTypes.LiteralType;
 import tkom.common.tokens.TokenType;
-import tkom.components.FunctionDef;
-import tkom.components.Literal;
-import tkom.components.Parameter;
-import tkom.components.Program;
+import tkom.components.*;
 import tkom.components.expressions.*;
 import tkom.components.statements.*;
 import tkom.exception.ExceededLimitsException;
@@ -202,128 +199,224 @@ public class ParserTest {
         assertEquals(leftExpr.literal.getDoubleValue(), 5.4, 10^-6);
     }
 
-//    @Test
-//    public void test_RelationalExpression() throws Exception {
-//        String x = "x || y";
-//        initParser(x);
-//        myParser.nextToken();
-//        IExpression expr = myParser.parseExpression();
-//        assertThat(expr, instanceOf(RelExpression.class));
-//    }
+    @Test
+    public void test_RelationalSmallerExpression() throws Exception {
+        String x = "x < y";
+        initParser(x);
+        myParser.nextToken();
+        IExpression expr = myParser.parseExpression();
+        assertThat(expr, instanceOf(RelExpression.class));
+    }
 
-//    @Test
-//    public void test_AndExpression() throws Exception {
-//        String x = "(true && x)";
-//        initParser(x);
-//        myParser.nextToken();
-//        IExpression expr = myParser.parseExpression();
-//        assertThat(expr, instanceOf(AndExpression.class));
-//    }
-//
-//    @Test
-//    public void test_IfStatement() throws Exception {
-//        String x = "if(x > 4) { x=1; }";
-//        initParser(x);
-//        myParser.nextToken();
-//        IStatement stmt = myParser.parseStatement();
-//        assertThat(stmt, instanceOf(IfStatement.class));
-//    }
-//
-//    @Test
-//    public void test_WhileStatement() throws Exception {
-//        String x = "while(x > 4) { x=1; }";
-//        initParser(x);
-//        myParser.nextToken();
-//        IStatement stmt = myParser.parseStatement();
-//        assertThat(stmt, instanceOf(WhileStatement.class));
-//    }
-//
-//    @Test
-//    public void test_ReturnStatement1() throws Exception {
-//        String x = "return w;";
-//        initParser(x);
-//        myParser.nextToken();
-//        IStatement stmt = myParser.parseStatement();
-//        assertThat(stmt, instanceOf(ReturnStatement.class));
-//    }
-//
-//    @Test
-//    public void test_ReturnStatement2() throws Exception {
-//        String x = "return x+8;";
-//        initParser(x);
-//        myParser.nextToken();
-//        IStatement stmt = myParser.parseStatement();
-//        assertThat(stmt, instanceOf(ReturnStatement.class));
-//    }
-//
-//    @Test
-//    public void test_AssignStatement1() throws Exception {
-//        String x = "w = 5;";
-//        initParser(x);
-//        myParser.nextToken();
-//        IStatement stmt = myParser.parseStatement();
-//        assertThat(stmt, instanceOf(AssignStatement.class));
-//    }
-//
-//    @Test
-//    public void test_PrintStatement1() throws Exception {
-//        String x = "print(\"Hello\");";
-//        initParser(x);
-//        myParser.nextToken();
-//        IStatement stmt = myParser.parseStatement();
-//        assertThat(stmt, instanceOf(PrintStatement.class));
-//    }
-//
-//    @Test
-//    public void test_PrintStatement2() throws Exception {
-//        String x = "print(x);";
-//        initParser(x);
-//        myParser.nextToken();
-//        IStatement stmt = myParser.parseStatement();
-//        assertThat(stmt, instanceOf(PrintStatement.class));
-//    }
-//
-//    @Test
-//    public void test_Parameters() throws Exception {
-//        String x = "x, y, hello";
-//        initParser(x);
-//        myParser.nextToken();
-//        ArrayList<Parameter> params = myParser.parseParameters();
-//        assertEquals(params.size(), 3);
-//        assertThat(params.get(0), instanceOf(Parameter.class));
-//        assertEquals(params.get(0).name, "x");
-//        assertEquals(params.get(1).name, "y");
-//        assertEquals(params.get(2).name, "hello");
-//    }
-//
-//    @Test
-//    public void test_ParametersException() throws Exception {
-//        String x = "x, 2, hello";
-//        initParser(x);
-//        myParser.nextToken();
-//        ArrayList<Parameter> params = myParser.parseParameters();
-//        assertEquals(params.size(), 3);
-//
-//    }
-//
-//    @Test
-//    public void test_FunctionDefinitionTrue() throws Exception {
-//        String x = "function hello() {print(\"Hello\");}";
-//        initParser(x);
-//        HashMap<String, FunctionDef> functions = new HashMap<>();
-//        myParser.nextToken();
-//        boolean success = myParser.parseFuncDef(functions);
-//        assertTrue(success);
-//    }
+    @Test
+    public void test_RelationalEqualExpression() throws Exception {
+        String x = "x == y";
+        initParser(x);
+        myParser.nextToken();
+        IExpression expr = myParser.parseExpression();
+        assertThat(expr, instanceOf(RelExpression.class));
+    }
 
-//    @Test
-//    public void test_FunctionDefinitionException() throws Exception {
-//        String x = "hello() {print(\"Hello\");}";
-//        initParser(x);
-//        HashMap<String, FunctionDef> functions = new HashMap<>();
-//        myParser.nextToken();
-//        boolean success = myParser.parseFuncDef(functions);
-//        assertTrue(success);
-//    }
+    @Test
+    public void test_AndExpression() throws Exception {
+        String x = "x && y";
+        initParser(x);
+        myParser.nextToken();
+        IExpression expr = myParser.parseExpression();
+        assertThat(expr, instanceOf(AndExpression.class));
+        PrimExpression leftExpr = (PrimExpression)((AndExpression)expr).left;
+        PrimExpression rightExpr = (PrimExpression)((AndExpression)expr).right;
+        assertEquals(rightExpr.type, ExpressionType.E_LITERAL);
+        assertEquals(rightExpr.literal.getIdentifierValue(), "y");
+        assertEquals(rightExpr.literal.getType(), LiteralType.L_IDENT);
+        assertEquals(leftExpr.literal.getIdentifierValue(), "x");
+    }
+
+    @Test
+    public void test_AndExpressionWithInt() throws Exception {
+        String x = "2 && y";
+        initParser(x);
+        myParser.nextToken();
+        IExpression expr = myParser.parseExpression();
+        assertThat(expr, instanceOf(AndExpression.class));
+    }
+
+    @Test
+    public void test_OrExpression() throws Exception {
+        String x = "x || y";
+        initParser(x);
+        myParser.nextToken();
+        IExpression expr = myParser.parseExpression();
+        assertThat(expr, instanceOf(Expression.class));
+    }
+    @Test
+    public void test_OrExpressionWithBool() throws Exception {
+        String x = "x || False";
+        initParser(x);
+        myParser.nextToken();
+        IExpression expr = myParser.parseExpression();
+        assertThat(expr, instanceOf(Expression.class));
+    }
+
+
+    @Test
+    public void test_IfStatementNoElse() throws Exception {
+        String x = "if(x > 4) { x=1; }";
+        initParser(x);
+        myParser.nextToken();
+        IStatement stmt = myParser.parseStatement();
+        assertThat(stmt, instanceOf(IfStatement.class));
+        IExpression cond = ((IfStatement)stmt).getCondition();
+        assertThat(cond, instanceOf(RelExpression.class));
+        Block bTrue = ((IfStatement)stmt).getBlockTrue();
+        Block bElse = ((IfStatement)stmt).getBlockElse();
+        assertThat(bTrue, instanceOf(Block.class));
+        assertNull(bElse);
+    }
+
+    @Test
+    public void test_IfStatementWithElse() throws Exception {
+        String x = "if(x > 4) { x=1; } else {x=2;}";
+        initParser(x);
+        myParser.nextToken();
+        IStatement stmt = myParser.parseStatement();
+        assertThat(stmt, instanceOf(IfStatement.class));
+        IExpression cond = ((IfStatement)stmt).getCondition();
+        assertThat(cond, instanceOf(RelExpression.class));
+        Block bTrue = ((IfStatement)stmt).getBlockTrue();
+        Block bElse = ((IfStatement)stmt).getBlockElse();
+        assertThat(bTrue, instanceOf(Block.class));
+        assertThat(bElse, instanceOf(Block.class));
+    }
+
+    @Test
+    public void test_WhileStatement() throws Exception {
+        String x = "while(x > 4) { x=1; }";
+        initParser(x);
+        myParser.nextToken();
+        IStatement stmt = myParser.parseStatement();
+        assertThat(stmt, instanceOf(WhileStatement.class));
+        IExpression cond = ((WhileStatement)stmt).getCondition();
+        assertThat(cond, instanceOf(RelExpression.class));
+        Block block = ((WhileStatement)stmt).getBlock();
+        assertThat(block, instanceOf(Block.class));
+    }
+
+    @Test
+    public void test_ReturnStatementIdentifier() throws Exception {
+        String x = "return w;";
+        initParser(x);
+        myParser.nextToken();
+        IStatement stmt = myParser.parseStatement();
+        assertThat(stmt, instanceOf(ReturnStatement.class));
+    }
+
+    @Test
+    public void test_ReturnStatementAddition() throws Exception {
+        String x = "return x+8;";
+        initParser(x);
+        myParser.nextToken();
+        IStatement stmt = myParser.parseStatement();
+        assertThat(stmt, instanceOf(ReturnStatement.class));
+    }
+
+    @Test
+    public void test_AssignStatementInt() throws Exception {
+        String x = "w = 5;";
+        initParser(x);
+        myParser.nextToken();
+        IStatement stmt = myParser.parseStatement();
+        assertThat(stmt, instanceOf(AssignStatement.class));
+        String identifier = ((AssignStatement)stmt).getIdentifier();
+        IExpression expr = ((AssignStatement)stmt).getExpression();
+        assertEquals(identifier, "w");
+        assertThat(expr, instanceOf(PrimExpression.class));
+        assertEquals(((PrimExpression)expr).type, ExpressionType.E_LITERAL);
+        Literal lit = ((PrimExpression)expr).literal;
+        assertEquals(lit.getIntValue(), 5);
+    }
+
+    @Test
+    public void test_PrintStatementString() throws Exception {
+        String x = "print(\"Hello\");";
+        initParser(x);
+        myParser.nextToken();
+        IStatement stmt = myParser.parseStatement();
+        assertThat(stmt, instanceOf(PrintStatement.class));
+    }
+
+    @Test
+    public void test_PrintStatementIdentifier() throws Exception {
+        String x = "print(x);";
+        initParser(x);
+        myParser.nextToken();
+        IStatement stmt = myParser.parseStatement();
+        assertThat(stmt, instanceOf(PrintStatement.class));
+    }
+
+    @Test
+    public void test_Parameters() throws Exception {
+        String x = "x, y, hello";
+        initParser(x);
+        myParser.nextToken();
+        ArrayList<Parameter> params = myParser.parseParameters();
+        assertEquals(params.size(), 3);
+        assertThat(params.get(0), instanceOf(Parameter.class));
+        assertEquals(params.get(0).name, "x");
+        assertEquals(params.get(1).name, "y");
+        assertEquals(params.get(2).name, "hello");
+    }
+
+    @Test
+    public void test_ParametersExceptionDuplicatedIdentifier() throws Exception {
+        String x = "x, w, x";
+        initParser(x);
+        myParser.nextToken();
+        assertThrows(MissingPartException.class, () -> myParser.parseParameters());
+    }
+
+    @Test
+    public void test_ParametersExceptionNotIdentifier() throws Exception {
+        String x = "x, 2, x";
+        initParser(x);
+        myParser.nextToken();
+        assertThrows(InvalidMethodException.class, () -> myParser.parseParameters());
+    }
+
+    @Test
+    public void test_FunctionDefinitionTrue() throws Exception {
+        String x = "function hello() {print(\"Hello\");}";
+        initParser(x);
+        HashMap<String, FunctionDef> functions = new HashMap<>();
+        myParser.nextToken();
+        boolean success = myParser.parseFuncDef(functions);
+        assertTrue(success);
+    }
+
+    @Test
+    public void test_FunctionDefinitionExceptionNoName() throws Exception {
+        String x = "() {print(\"Hello\");}";
+        initParser(x);
+        HashMap<String, FunctionDef> functions = new HashMap<>();
+        myParser.nextToken();
+        assertThrows(InvalidTokenException.class, () -> myParser.parseFuncDef(functions));
+    }
+
+    @Test
+    public void test_FunctionDefinitionExceptionNoLBracket() throws Exception {
+        String x = "function hej) {print(\"Hello\");}";
+        initParser(x);
+        HashMap<String, FunctionDef> functions = new HashMap<>();
+        myParser.nextToken();
+        assertThrows(MissingPartException.class, () -> myParser.parseFuncDef(functions));
+    }
+    @Test
+    public void test_FunctionDefinitionExceptionNoRBracket() throws Exception {
+        String x = "function name( {print(\"Hello\");}";
+        initParser(x);
+        HashMap<String, FunctionDef> functions = new HashMap<>();
+        myParser.nextToken();
+        assertThrows(MissingPartException.class, () -> myParser.parseFuncDef(functions));
+    }
 
 }

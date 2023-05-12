@@ -11,4 +11,12 @@ public class WhileStatement implements IStatement {
         condition = cond;
         block = blk;
     }
+
+    public IExpression getCondition(){
+        return condition;
+    }
+
+    public Block getBlock(){
+        return block;
+    }
 }

@@ -13,4 +13,16 @@ public class IfStatement implements IStatement {
         blockTrue = blkTrue;
         blockElse = blkElse;
     }
+
+    public IExpression getCondition(){
+        return condition;
+    }
+
+    public Block getBlockTrue(){
+        return blockTrue;
+    }
+
+    public Block getBlockElse(){
+        return blockElse;
+    }
 }
