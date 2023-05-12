@@ -176,10 +176,6 @@ public class Parser {
     /**
      * Parse: prim_expr = [ negation ], ( literal | ident_start_stmt | “(“, expr, “)” );
      */
-    //TODO: finish
-    // additional class?
-    // What attributes the class should have?
-    // What type should be included inside the returned object?
     private IExpression parsePrimExpression() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         boolean isNegated = false;
         if (isCurrToken(TokenType.T_NOT) || isCurrToken(TokenType.T_MINUS)){
@@ -205,7 +201,6 @@ public class Parser {
         }
         else
             return null;
-            //throw new MissingPartException(currToken, "TODO", "PrimExpression");
     }
 
     /**
@@ -291,7 +286,6 @@ public class Parser {
         return new FunctionCall(name, expressionArrayList);
     }
 
-    //TODO: finish, what kind of a class to use?
     /**
      * Parse: rest_obj_access 	=  ‘.’, identifier, [ rest_func_call ], { ‘.’, identifier, [ rest_func_call ] }  ;
      */
