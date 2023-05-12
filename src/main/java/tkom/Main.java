@@ -13,16 +13,15 @@ import tkom.lexer.Lexer;
 import tkom.parser.Parser;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.ListIterator;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static tkom.common.tokens.TokenMap.T_KEYWORDS;
 
 
 public class Main
 {
-    public static void main( String[] args ) throws IOException, InvalidTokenException, ExceededLimitsException, MissingPartException {
+    public static void main( String[] args ) throws Exception {
         String filename = "src/main/java/tkom/test.txt";
         ExceptionHandler excHandler = new ExceptionHandler();
         if (args.length == 1)
@@ -33,8 +32,12 @@ public class Main
         ArrayList<Token> tokenArray = new ArrayList<>();
         Token newToken = myLexer.getToken();
         tokenArray.add(newToken);
-        Parser myParser = new Parser(myLexer, excHandler);
-        Program program = myParser.parse();
+        while (myLexer.isRunning()){
+            newToken = myLexer.getToken();
+            tokenArray.add(newToken);
+        }
+//        Parser myParser = new Parser(myLexer, excHandler);
+//        Program program = myParser.parse();
         ListIterator litr = null;
         litr=tokenArray.listIterator();
         while(litr.hasNext()){

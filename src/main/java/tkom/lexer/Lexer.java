@@ -15,12 +15,6 @@ import java.util.List;
 
 import static tkom.common.tokens.TokenMap.*;
 
-//escape characters handled correctly in the string
-//overflow in numbers
-//more tests for errors
-//different error classes
-//change of name buildIdentifier -> buildIdentifierOrKeyword
-
 public class Lexer implements ILexer{
     boolean running;    // set to true as long as EOF is not encountered
     BuffReader br;
