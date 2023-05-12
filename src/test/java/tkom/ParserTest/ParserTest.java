@@ -150,6 +150,23 @@ public class ParserTest {
     }
 
     @Test
+    public void test_ArithmeticExpressionAdditionOpMore() throws Exception {
+        String x = "2+5+2";
+        initParser(x);
+        myParser.nextToken();
+        IExpression expr = myParser.parseExpression();
+        assertThat(expr, instanceOf(ArithmExpression.class));
+        assertEquals(((ArithmExpression)expr).isSubtraction(), false);
+        assertThat(((ArithmExpression)expr).left, instanceOf(ArithmExpression.class));
+        assertThat(((ArithmExpression)expr).right, instanceOf(PrimExpression.class));
+        ArithmExpression leftExpr = (ArithmExpression)((ArithmExpression)expr).left;
+        PrimExpression rightExpr = (PrimExpression)((ArithmExpression)expr).right;
+        assertThat(leftExpr.right, instanceOf(PrimExpression.class));
+        assertEquals(rightExpr.type, ExpressionType.E_LITERAL);
+        assertEquals(rightExpr.literal.getIntValue(), 2);
+    }
+
+    @Test
     public void test_ArithmeticExpressionSubtractionOp() throws Exception {
         String x = "2-5.4";
         initParser(x);
@@ -355,7 +372,7 @@ public class ParserTest {
     }
     @Test
     public void test_StmtFunctionCall() throws Exception {
-        String x = "hello(x);";
+        String x = "hello(x, 3);";
         initParser(x);
         myParser.nextToken();
         IStatement stmt = myParser.parseStatement();
@@ -400,6 +417,28 @@ public class ParserTest {
     }
 
     @Test
+    public void test_ObjectAccess() throws Exception {
+        String x = "x.length";
+        initParser(x);
+        myParser.nextToken();
+        IStatement stmt = myParser.parseIdentStartStmt();
+        assertThat(stmt, instanceOf(ObjectAccess.class));
+    }
+
+    @Test
+    public void test_ObjectAccessMore() throws Exception {
+        String x = "x.y.length";
+        initParser(x);
+        myParser.nextToken();
+        IStatement stmt = myParser.parseIdentStartStmt();
+        assertThat(stmt, instanceOf(ObjectAccess.class));
+        String identifier = ((ObjectAccess)stmt).getName();
+        IExpression expr = ((ObjectAccess)stmt).getExpression();
+        assertEquals(identifier, "x");
+        assertThat(expr, instanceOf(ObjectAccess.class));
+    }
+
+    @Test
     public void test_FunctionDefinitionTrue() throws Exception {
         String x = "function hello() {print(\"Hello\");}";
         initParser(x);
@@ -433,6 +472,18 @@ public class ParserTest {
         HashMap<String, FunctionDef> functions = new HashMap<>();
         myParser.nextToken();
         assertThrows(MissingPartException.class, () -> myParser.parseFuncDef(functions));
+    }
+
+    @Test
+    public void test_Block() throws Exception {
+        String x = "{x = 2+2; print(\"Hi\");}";
+        initParser(x);
+        myParser.nextToken();
+        Block block = myParser.parseBlock();
+        IStatement stmt0 = block.getStmt(0);
+        IStatement stmt1 = block.getStmt(1);
+        assertThat(stmt0, instanceOf(AssignStatement.class));
+        assertThat(stmt1, instanceOf(PrintStatement.class));
     }
 
 }

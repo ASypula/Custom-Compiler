@@ -96,7 +96,7 @@ public class Parser {
      */
     private IExpression parseMultExpression() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         IExpression left = parsePrimExpression();
-        if (isCurrToken(TokenType.T_MULT) || isCurrToken(TokenType.T_DIV)){
+        while (isCurrToken(TokenType.T_MULT) || isCurrToken(TokenType.T_DIV)){
             Token signToken = currToken;
             nextToken();
             IExpression right = parsePrimExpression();
@@ -115,7 +115,7 @@ public class Parser {
      */
     private IExpression parseArithmExpression() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
         IExpression left = parseMultExpression();
-        if (isCurrToken(TokenType.T_PLUS) || isCurrToken(TokenType.T_MINUS)){
+        while (isCurrToken(TokenType.T_PLUS) || isCurrToken(TokenType.T_MINUS)){
             Token signToken = currToken;
             nextToken();
             IExpression right = parseMultExpression();
@@ -190,7 +190,7 @@ public class Parser {
         if (stmt != null){
             if (stmt instanceof LiteralStatement)
                 return new PrimExpression(isNegated, new Literal(((LiteralStatement) stmt).getIdentifier(), LiteralType.L_IDENT));
-            //TODO: do sth
+            return (IExpression) stmt;
         }
         Literal literal = parseLiteral();
         if (literal != null){
@@ -296,16 +296,21 @@ public class Parser {
      * Parse: rest_obj_access 	=  ‘.’, identifier, [ rest_func_call ], { ‘.’, identifier, [ rest_func_call ] }  ;
      */
     private IStatement parseObjectAccess(String ident) throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
-        if (!isCurrToken(TokenType.T_DOT))
+        if (!consumeIfToken(TokenType.T_DOT))
             return null;
-        IExpression expr = parseExpression();
-        return new ObjectAccess(ident, expr);
+        IExpression expr = parsePrimExpression();
+        ObjectAccess objAccess = new ObjectAccess(ident, expr);
+        while (consumeIfToken(TokenType.T_DOT)){
+            expr = parsePrimExpression();
+            objAccess = new ObjectAccess(objAccess, expr);
+        }
+        return objAccess;
     }
 
     /**
      * Parse ident_start_stmt = identifier, { assign_stmt | rest_func_call | rest_obj_access }, ';';
      */
-    private IStatement parseIdentStartStmt() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
+    public IStatement parseIdentStartStmt() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
         if (!isCurrToken(TokenType.T_IDENT) && !Arrays.asList(classTokens).contains(currToken.getType()))
             return null;
         String identifier;
@@ -342,6 +347,8 @@ public class Parser {
         nextToken();
         if (!consumeIfToken(TokenType.T_REG_BRACKET_R))
             throw new MissingPartException(currToken, "bracket )", "PrintStatement");
+        if (!consumeIfToken( TokenType.T_SEMICOLON))
+            throw new MissingPartException(currToken, "semicolon ';'", "the end of a statement");
         return new PrintStatement(t, textOrIdent);
     }
 
@@ -363,17 +370,18 @@ public class Parser {
         if (stmt != null)
             return stmt;
         stmt = parseIdentStartStmt();
-        if (stmt != null)
+        if (stmt != null){
+            if (!consumeIfToken( TokenType.T_SEMICOLON))
+                throw new MissingPartException(currToken, "semicolon ';'", "the end of a statement");
             return stmt;
-        if (!consumeIfToken( TokenType.T_SEMICOLON))
-            throw new MissingPartException(currToken, "semicolon ';'", "the end of a statement");
+        }
         return null;
     }
 
     /**
      * Parse block: “{“, { statement }, “}”;
      */
-    private Block parseBlock() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
+    public Block parseBlock() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         if (!consumeIfToken(TokenType.T_CURLY_BRACKET_L))
             return null;
         ArrayList<IStatement> statements = new ArrayList<>();

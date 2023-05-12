@@ -379,4 +379,30 @@ public class ParserUnitTest {
         assertThrows(MissingPartException.class, () -> myParser.parseFuncDef(functions));
     }
 
+    @Test
+    public void test_Block() throws Exception {
+        // {x = 2+2; print("Hi");}
+        ArrayList<Token> tList = new ArrayList<>();
+        tList.add(new Token(TokenType.T_CURLY_BRACKET_L, new Position(0, 0)));
+        tList.add(new TokenString(TokenType.T_IDENT, new Position(0, 0), "x"));
+        tList.add(new Token(TokenType.T_ASSIGN, new Position(0, 0)));
+        tList.add(new TokenInt(TokenType.T_INT, new Position(0, 0), 2));
+        tList.add(new Token(TokenType.T_PLUS, new Position(0, 0)));
+        tList.add(new TokenInt(TokenType.T_INT, new Position(0, 0), 2));
+        tList.add(new Token(TokenType.T_SEMICOLON, new Position(0, 0)));
+        tList.add(new Token(TokenType.T_PRINT, new Position(0, 0)));
+        tList.add(new Token(TokenType.T_REG_BRACKET_L, new Position(0, 0)));
+        tList.add(new TokenString(TokenType.T_STRING, new Position(0, 0), "Hi"));
+        tList.add(new Token(TokenType.T_REG_BRACKET_R, new Position(0, 0)));
+        tList.add(new Token(TokenType.T_SEMICOLON, new Position(0, 0)));
+        tList.add(new Token(TokenType.T_CURLY_BRACKET_R, new Position(0, 0)));
+        initParser(tList);
+        myParser.nextToken();
+        Block block = myParser.parseBlock();
+        IStatement stmt0 = block.getStmt(0);
+        IStatement stmt1 = block.getStmt(1);
+        assertThat(stmt0, instanceOf(AssignStatement.class));
+        assertThat(stmt1, instanceOf(PrintStatement.class));
+    }
+
 }
