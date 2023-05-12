@@ -142,7 +142,7 @@ public class Lexer implements ILexer{
     }
 
     /**
-     * Builds a number as a double. Counts the total number of digits to allow later
+     * Builds a number as an integer. Counts the total number of digits to allow later
      * creation of floating point number by dividing double number by the digit count.
      * Separately takes care of the total and fractional part.
      * @param firstPos                  position of the first char of the token
@@ -150,13 +150,13 @@ public class Lexer implements ILexer{
      * @throws IOException              on BufferedReader error
      * @throws ExceededLimitsException  on possible overflow
      */
-    public ImmutablePair<Double, Integer> buildNumber(Position firstPos) throws IOException, ExceededLimitsException {
+    public ImmutablePair<Integer, Integer> buildNumber(Position firstPos) throws IOException, ExceededLimitsException {
         int count = 0;
-        double number =0;
+        int number =0;
         while (running && Character.isDigit(currChar)) {
             count++;
-            if (number>(Double.MAX_VALUE - currChar)/10)
-                throw new ExceededLimitsException(firstPos, Double.toString(number));
+            if (number>(Integer.MAX_VALUE - currChar)/10)
+                throw new ExceededLimitsException(firstPos, Integer.toString(number));
             number = number*10 + Character.getNumericValue(currChar);
             nextChar();
         }
@@ -175,26 +175,23 @@ public class Lexer implements ILexer{
         if (!Character.isDigit(currChar))
             return false;
         Position firstPos = new Position(br.currPos.rowNo, br.currPos.colNo);
-        double number = 0;
+        int number = 0;
         if (currChar=='0') {
             number+=Character.getNumericValue(currChar);
             // omit any additional leading zero's
             while (currChar == '0')
                 nextChar();
         }
-        ImmutablePair<Double, Integer> pair = buildNumber(firstPos);
+        ImmutablePair<Integer, Integer> pair = buildNumber(firstPos);
         number+=pair.left;
         if (currChar == '.'){
             nextChar();
-            ImmutablePair<Double, Integer> pair1 = buildNumber(firstPos);
-            double numberD = number + pair1.left/Math.pow(10, pair1.right);
+            ImmutablePair<Integer, Integer> pair1 = buildNumber(firstPos);
+            double numberD = (double)number + pair1.left/Math.pow(10, pair1.right);
             currToken = new TokenDouble(TokenType.T_DOUBLE, firstPos, numberD);
         }
-        // check against max_int, if number > MAX_VALUE, return a double, else return int
-        else if (number > Integer.MAX_VALUE)
-            currToken =  new TokenDouble(TokenType.T_DOUBLE, firstPos, number);
         else
-            currToken =  new TokenInt(TokenType.T_INT, firstPos, (int)number);
+            currToken =  new TokenInt(TokenType.T_INT, firstPos, number);
         return true;
     }
 
@@ -269,7 +266,8 @@ public class Lexer implements ILexer{
             }
             else
                 builder.append(currChar);
-            nextCharCommText();
+            if (running)
+                nextCharCommText();
         }
         if (stringLen > MAX_LENGTH)
             throw new ExceededLimitsException(firstPos, builder.toString(), MAX_LENGTH);
