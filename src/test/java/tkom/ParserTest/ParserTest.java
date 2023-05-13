@@ -275,6 +275,16 @@ public class ParserTest {
         assertThat(expr, instanceOf(Expression.class));
     }
 
+    @Test
+    public void test_ClassCall() throws Exception {
+        String x = "Point(x)";
+        initParser(x);
+        myParser.nextToken();
+        IExpression expr = myParser.parseExpression();
+        assertThat(expr, instanceOf(FunctionCall.class));
+        assertEquals(((FunctionCall)expr).getName(), "Point");
+    }
+
 
     @Test
     public void test_IfStatementNoElse() throws Exception {

@@ -12,6 +12,10 @@ public class Block implements Node{
         statements = stmts;
     }
 
+    public ArrayList<IStatement> getStmts(){
+        return statements;
+    }
+
     public IStatement getStmt(int i) throws InvalidMethodException {
         if (i<statements.size())
             return statements.get(i);

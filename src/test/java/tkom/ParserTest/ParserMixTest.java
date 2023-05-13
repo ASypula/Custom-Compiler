@@ -2,12 +2,14 @@ package tkom.ParserTest;
 
 import org.junit.Test;
 import tkom.common.ExceptionHandler;
-import tkom.common.ParserComponentTypes.ExpressionType;
-import tkom.components.Literal;
+import tkom.components.*;
 import tkom.components.expressions.ArithmExpression;
 import tkom.components.expressions.IExpression;
 import tkom.components.expressions.MultExpression;
 import tkom.components.expressions.PrimExpression;
+import tkom.components.statements.AssignStatement;
+import tkom.components.statements.IStatement;
+import tkom.components.statements.PrintStatement;
 import tkom.exception.ExceededLimitsException;
 import tkom.exception.InvalidMethodException;
 import tkom.exception.InvalidTokenException;
@@ -50,5 +52,21 @@ public class ParserMixTest {
         assertEquals(leftExpr.literal.getIntValue(), 2);
         assertEquals(leftMultExpr.literal.getIdentifierValue(), "y");
         assertEquals(rightMultExpr.literal.getDoubleValue(), 5.1, 10^-6);
+    }
+
+    @Test
+    public void test_ProgramWithPrint() throws Exception{
+        String x = "function printHello() {x = \"Hello\"; print(x); }";
+        initParser(x);
+        Program program = myParser.parse();
+        FunctionDef funcDef = program.getFunction("printHello");
+        assertEquals(funcDef.getName(), "printHello");
+        assertEquals(funcDef.getParams().size(), 0);
+        Block block = funcDef.getBlock();
+        assertEquals(block.getStmts().size(), 2);
+        IStatement stmt0 = block.getStmt(0);
+        IStatement stmt1 = block.getStmt(1);
+        assertThat(stmt0, instanceOf(AssignStatement.class));
+        assertThat(stmt1, instanceOf(PrintStatement.class));
     }
 }

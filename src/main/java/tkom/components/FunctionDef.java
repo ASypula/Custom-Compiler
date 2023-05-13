@@ -12,4 +12,16 @@ public class FunctionDef implements Node{
         parameters = params;
         block = blk;
     }
+
+    public String getName(){
+        return name;
+    }
+
+    public ArrayList<Parameter> getParams(){
+        return parameters;
+    }
+
+    public Block getBlock(){
+        return block;
+    }
 }

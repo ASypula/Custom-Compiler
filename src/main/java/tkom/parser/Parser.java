@@ -12,7 +12,6 @@ import tkom.exception.InvalidMethodException;
 import tkom.exception.InvalidTokenException;
 import tkom.exception.MissingPartException;
 import tkom.lexer.ILexer;
-import tkom.lexer.Lexer;
 
 import java.io.IOException;
 import java.util.*;
@@ -31,7 +30,6 @@ public class Parser {
             TokenType.T_LIST, TokenType.T_POINT};
     public ExceptionHandler excHandler;
     public Parser(ILexer lex, ExceptionHandler eh){
-
         lexer = lex;
         excHandler = eh;
     }
