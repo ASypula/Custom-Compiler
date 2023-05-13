@@ -1,5 +1,7 @@
 package tkom.components.statements;
 
+import tkom.visitor.Visitor;
+
 public class LiteralStatement implements IStatement{
     String identifier;
 
@@ -9,5 +11,10 @@ public class LiteralStatement implements IStatement{
 
     public String getIdentifier(){
         return identifier;
+    }
+
+    @Override
+    public void accept(Visitor visitor){
+        visitor.accept(this);
     }
 }

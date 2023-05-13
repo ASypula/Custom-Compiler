@@ -1,6 +1,7 @@
 package tkom.components.expressions;
 
 import tkom.common.tokens.Token;
+import tkom.visitor.Visitor;
 
 public class ArithmExpression implements IExpression{
 
@@ -22,5 +23,10 @@ public class ArithmExpression implements IExpression{
 
     public boolean isSubtraction() {
         return subtraction;
+    }
+
+    @Override
+    public void accept(Visitor visitor){
+        visitor.accept(this);
     }
 }

@@ -1,5 +1,7 @@
 package tkom.components.expressions;
 
+import tkom.visitor.Visitor;
+
 public class AndExpression implements IExpression{
     public IExpression left;
     public IExpression right;
@@ -12,5 +14,10 @@ public class AndExpression implements IExpression{
     public AndExpression(IExpression l){
         left = l;
         right = null;
+    }
+
+    @Override
+    public void accept(Visitor visitor){
+        visitor.accept(this);
     }
 }

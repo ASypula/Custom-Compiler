@@ -1,10 +1,11 @@
 package tkom.components.expressions;
 
 import tkom.common.tokens.Token;
+import tkom.visitor.Visitor;
 
 public class RelExpression implements IExpression{
-    IExpression left;
-    IExpression right;
+    public IExpression left;
+    public IExpression right;
 
     Token relOperator;
 
@@ -18,5 +19,10 @@ public class RelExpression implements IExpression{
         left = l;
         right = null;
         relOperator = null;
+    }
+
+    @Override
+    public void accept(Visitor visitor){
+        visitor.accept(this);
     }
 }

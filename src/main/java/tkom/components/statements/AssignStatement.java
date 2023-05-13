@@ -1,6 +1,7 @@
 package tkom.components.statements;
 
 import tkom.components.expressions.IExpression;
+import tkom.visitor.Visitor;
 
 public class AssignStatement implements IStatement {
     String identifier;
@@ -11,11 +12,14 @@ public class AssignStatement implements IStatement {
         right = expr;
     }
 
-    public String getIdentifier() {
-        return identifier;
-    }
+    public String getIdentifier() { return identifier; }
 
     public IExpression getExpression(){
         return right;
+    }
+
+    @Override
+    public void accept(Visitor visitor){
+        visitor.accept(this);
     }
 }

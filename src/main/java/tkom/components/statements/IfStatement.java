@@ -2,6 +2,7 @@ package tkom.components.statements;
 
 import tkom.components.Block;
 import tkom.components.expressions.IExpression;
+import tkom.visitor.Visitor;
 
 public class IfStatement implements IStatement {
     IExpression condition;
@@ -24,5 +25,10 @@ public class IfStatement implements IStatement {
 
     public Block getBlockElse(){
         return blockElse;
+    }
+
+    @Override
+    public void accept(Visitor visitor){
+        visitor.accept(this);
     }
 }

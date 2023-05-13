@@ -1,6 +1,6 @@
 package tkom.components.expressions;
 
-import tkom.components.Node;
+import tkom.visitor.Visitable;
 
-public interface IExpression extends Node {
+public interface IExpression extends Visitable {
 }

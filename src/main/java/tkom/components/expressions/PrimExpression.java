@@ -3,6 +3,7 @@ package tkom.components.expressions;
 import tkom.common.ParserComponentTypes.ExpressionType;
 import tkom.components.Literal;
 import tkom.components.statements.IStatement;
+import tkom.visitor.Visitor;
 
 public class PrimExpression implements IExpression{
     public boolean negated;
@@ -30,6 +31,11 @@ public class PrimExpression implements IExpression{
         negated = isNegated;
         expr = exp;
         type = ExpressionType.E_EXPR;
+    }
+
+    @Override
+    public void accept(Visitor visitor){
+        visitor.accept(this);
     }
 
 }

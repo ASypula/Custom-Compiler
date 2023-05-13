@@ -4,8 +4,10 @@ import tkom.common.ParserComponentTypes.LiteralType;
 import tkom.common.tokens.TokenType;
 import tkom.exception.InvalidMethodException;
 import tkom.exception.MissingPartException;
+import tkom.visitor.Visitable;
+import tkom.visitor.Visitor;
 
-public class Literal {
+public class Literal implements Visitable {
     LiteralType type;
     int number;
     double value;
@@ -83,5 +85,10 @@ public class Literal {
             return tokenType;
         else
             throw new InvalidMethodException("Literal", "token type");
+    }
+
+    @Override
+    public void accept(Visitor visitor){
+        visitor.accept(this);
     }
 }

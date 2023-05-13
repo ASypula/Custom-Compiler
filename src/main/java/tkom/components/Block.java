@@ -2,10 +2,12 @@ package tkom.components;
 
 import tkom.components.statements.IStatement;
 import tkom.exception.InvalidMethodException;
+import tkom.visitor.Visitable;
+import tkom.visitor.Visitor;
 
 import java.util.ArrayList;
 
-public class Block implements Node{
+public class Block implements Visitable {
     ArrayList<IStatement> statements;
 
     public Block(ArrayList<IStatement> stmts){
@@ -21,5 +23,10 @@ public class Block implements Node{
             return statements.get(i);
         else
             throw new InvalidMethodException("non-existing statement number", "block");
+    }
+
+    @Override
+    public void accept(Visitor visitor){
+        visitor.accept(this);
     }
 }

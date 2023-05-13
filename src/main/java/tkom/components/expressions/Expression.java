@@ -1,9 +1,11 @@
 package tkom.components.expressions;
 
+import tkom.visitor.Visitor;
+
 public class Expression implements IExpression{
     // For expressions that are divided by OR ('||')
-    IExpression left;
-    IExpression right;
+    public IExpression left;
+    public IExpression right;
 
     public Expression(IExpression l, IExpression r){
         left = l;
@@ -13,5 +15,10 @@ public class Expression implements IExpression{
     public Expression(IExpression l){
         left = l;
         right = null;
+    }
+
+    @Override
+    public void accept(Visitor visitor){
+        visitor.accept(this);
     }
 }

@@ -1,6 +1,7 @@
 package tkom.components.expressions;
 
 import tkom.common.tokens.Token;
+import tkom.visitor.Visitor;
 
 public class MultExpression implements IExpression{
     public IExpression left;
@@ -21,5 +22,10 @@ public class MultExpression implements IExpression{
 
     public boolean isDivision() {
         return division;
+    }
+
+    @Override
+    public void accept(Visitor visitor){
+        visitor.accept(this);
     }
 }

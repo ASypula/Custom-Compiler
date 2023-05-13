@@ -1,28 +1,17 @@
 package tkom;
 
 import tkom.common.ExceptionHandler;
-import tkom.common.Position;
-import tkom.common.tokens.Token;
-import tkom.common.tokens.TokenInt;
-import tkom.common.tokens.TokenType;
 import tkom.components.Program;
-import tkom.exception.ExceededLimitsException;
-import tkom.exception.ExceededLimitsException;
-import tkom.exception.InvalidTokenException;
-import tkom.exception.MissingPartException;
 import tkom.lexer.Lexer;
 import tkom.parser.Parser;
+import tkom.visitor.Visitor;
+import tkom.visitor.VisitorPrint;
 
 import java.io.*;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static tkom.common.tokens.TokenMap.T_KEYWORDS;
-
 
 public class Main
 {
-    public static void main( String[] args ) throws IOException, InvalidTokenException, ExceededLimitsException {
+    public static void main( String[] args ) throws Exception {
         String filename = "src/main/java/tkom/test.txt";
         ExceptionHandler excHandler = new ExceptionHandler();
         if (args.length == 1)
@@ -30,23 +19,10 @@ public class Main
         FileReader fr=new FileReader(filename);
         BufferedReader br=new BufferedReader(fr);
         Lexer myLexer = new Lexer(br, excHandler);
-        ArrayList<Token> tokenArray = new ArrayList<>();
-        Token newToken = myLexer.getToken();
-        tokenArray.add(newToken);
-        while (myLexer.isRunning()) {
-            newToken = myLexer.getToken();
-            tokenArray.add(newToken);
-        }
-//        Parser myParser = new Parser(myLexer, excHandler);
-//        Program program = myParser.parse();
-        ListIterator litr = null;
-        litr=tokenArray.listIterator();
-        while(litr.hasNext()){
-            Token t = (Token)litr.next();
-            System.out.println(t.getTypeString());
-            System.out.println(t.getPosition());
-        }
-
+        Parser myParser = new Parser(myLexer, excHandler);
+        Program program = myParser.parse();
+        Visitor visitor = new VisitorPrint();
+        program.accept(visitor);
 
 
         // For displaying

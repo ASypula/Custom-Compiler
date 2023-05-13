@@ -1,6 +1,6 @@
 package tkom.components.statements;
 
-import tkom.components.Node;
+import tkom.visitor.Visitable;
 
-public interface IStatement extends Node {
+public interface IStatement extends Visitable {
 }

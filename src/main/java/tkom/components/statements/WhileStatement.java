@@ -2,6 +2,7 @@ package tkom.components.statements;
 
 import tkom.components.Block;
 import tkom.components.expressions.IExpression;
+import tkom.visitor.Visitor;
 
 public class WhileStatement implements IStatement {
     IExpression condition;
@@ -18,5 +19,10 @@ public class WhileStatement implements IStatement {
 
     public Block getBlock(){
         return block;
+    }
+
+    @Override
+    public void accept(Visitor visitor){
+        visitor.accept(this);
     }
 }

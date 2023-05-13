@@ -1,8 +1,11 @@
 package tkom.components;
 
+import tkom.visitor.Visitable;
+import tkom.visitor.Visitor;
+
 import java.util.ArrayList;
 
-public class FunctionDef implements Node{
+public class FunctionDef implements Visitable {
     String name;
     ArrayList<Parameter> parameters;
     Block block;
@@ -23,5 +26,10 @@ public class FunctionDef implements Node{
 
     public Block getBlock(){
         return block;
+    }
+
+    @Override
+    public void accept(Visitor visitor){
+        visitor.accept(this);
     }
 }

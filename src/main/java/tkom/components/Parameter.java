@@ -1,9 +1,17 @@
 package tkom.components;
 
-public class Parameter {
+import tkom.visitor.Visitable;
+import tkom.visitor.Visitor;
+
+public class Parameter implements Visitable {
     public String name;
 
     public Parameter(String nm){
         name = nm;
+    }
+
+    @Override
+    public void accept(Visitor visitor){
+        visitor.accept(this);
     }
 }
