@@ -7,16 +7,14 @@ import tkom.common.tokens.TokenType;
 import tkom.components.*;
 import tkom.components.expressions.*;
 import tkom.components.statements.*;
-import tkom.exception.ExceededLimitsException;
-import tkom.exception.InvalidMethodException;
-import tkom.exception.InvalidTokenException;
-import tkom.exception.MissingPartException;
+import tkom.exception.*;
 import tkom.lexer.ILexer;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static tkom.common.ParserComponentTypes.OperatorMap.MAP_OPERATORS;
 import static tkom.common.tokens.TokenMap.T_KEYWORDS;
 
 public class Parser {
@@ -107,6 +105,8 @@ public class Parser {
         }
         return left;
     }
+//TODO: function call after or before dot
+
 
     /**
      * Parse: arithm_expr = mult_expr, { (“+” | “-“) mult_expr };
@@ -138,7 +138,7 @@ public class Parser {
             IExpression right = parseArithmExpression();
             if (right == null)
                 throw new MissingPartException(currToken, "right ArithmExpression", "RelExpression");
-            left = new RelExpression(left, right, relToken);
+            left = new RelExpression(left, right, MAP_OPERATORS.get(relToken.getType()));
         }
         return left;
     }
@@ -392,15 +392,20 @@ public class Parser {
      * Checks if given name is present in the provided parameters list
      */
     private boolean containsName(ArrayList<Parameter> list, String name){
-//        for (var param: list){
-//            if (param.name.equals(name))
-//                return true;
-//        }
-//        return false;
         List<String> containsList = list.stream()
                 .map(s -> s.name)
                 .filter(s -> s.equals(name)).toList();
         return !(containsList.size() == 0);
+    }
+
+    /**
+     * Checks if given name is present in the provided map of function definitions
+     */
+    private boolean containsNameFunc(HashMap<String, FunctionDef> map, String name){
+        ArrayList<String> listOfKeys
+                = map.keySet().stream().collect(
+                Collectors.toCollection(ArrayList::new));
+        return listOfKeys.contains(name);
     }
 
     /**
@@ -415,7 +420,7 @@ public class Parser {
                 if (isCurrToken(TokenType.T_IDENT)) {
                     String name = currToken.getStringValue();
                     if (containsName(params, name))
-                        throw new MissingPartException(currToken, "not duplicated identifier", "parameter name");
+                        throw new DuplicatedElementException("parameter", name, "parseParameters");
                     params.add(new Parameter(name));
                     nextToken();
                 }
@@ -437,6 +442,8 @@ public class Parser {
         if (!isCurrToken(TokenType.T_IDENT))
             throw new InvalidTokenException(currToken, TokenType.T_IDENT);
         String name = currToken.getStringValue();
+        if (containsNameFunc(functions, name))
+            throw new DuplicatedElementException("function definition", name, "parseFuncDef");
         nextToken();
         if (!consumeIfToken(TokenType.T_REG_BRACKET_L))
             throw new MissingPartException(currToken, "left bracket '('", "function definition");

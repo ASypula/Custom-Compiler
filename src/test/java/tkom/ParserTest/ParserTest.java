@@ -8,10 +8,7 @@ import tkom.common.tokens.TokenType;
 import tkom.components.*;
 import tkom.components.expressions.*;
 import tkom.components.statements.*;
-import tkom.exception.ExceededLimitsException;
-import tkom.exception.InvalidMethodException;
-import tkom.exception.InvalidTokenException;
-import tkom.exception.MissingPartException;
+import tkom.exception.*;
 import tkom.lexer.Lexer;
 import tkom.parser.Parser;
 
@@ -415,7 +412,7 @@ public class ParserTest {
         String x = "x, w, x";
         initParser(x);
         myParser.nextToken();
-        assertThrows(MissingPartException.class, () -> myParser.parseParameters());
+        assertThrows(DuplicatedElementException.class, () -> myParser.parseParameters());
     }
 
     @Test
@@ -434,6 +431,8 @@ public class ParserTest {
         IStatement stmt = myParser.parseIdentStartStmt();
         assertThat(stmt, instanceOf(ObjectAccess.class));
     }
+
+    //TODO: funkcja w dodawaniu
 
     @Test
     public void test_ObjectAccessMore() throws Exception {

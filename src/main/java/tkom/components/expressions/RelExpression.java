@@ -1,5 +1,6 @@
 package tkom.components.expressions;
 
+import tkom.common.ParserComponentTypes.OperatorType;
 import tkom.common.tokens.Token;
 import tkom.visitor.Visitor;
 
@@ -7,9 +8,9 @@ public class RelExpression implements IExpression{
     public IExpression left;
     public IExpression right;
 
-    Token relOperator;
+    OperatorType relOperator;
 
-    public RelExpression(IExpression l, IExpression r, Token op){
+    public RelExpression(IExpression l, IExpression r, OperatorType op){
         left = l;
         right = r;
         relOperator = op;
