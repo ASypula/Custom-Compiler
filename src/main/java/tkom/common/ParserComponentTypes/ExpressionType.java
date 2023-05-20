@@ -1,7 +1,7 @@
 package tkom.common.ParserComponentTypes;
 
 public enum ExpressionType {
-    E_LITERAL,
+    E_VALUE,
     E_STMT,
     E_EXPR
 }

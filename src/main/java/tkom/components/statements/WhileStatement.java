@@ -22,7 +22,7 @@ public class WhileStatement implements IStatement {
     }
 
     @Override
-    public void accept(Visitor visitor){
+    public void accept(Visitor visitor) throws Exception {
         visitor.accept(this);
     }
 }

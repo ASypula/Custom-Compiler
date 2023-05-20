@@ -26,7 +26,7 @@ public class Program implements Visitable {
     }
 
     @Override
-    public void accept(Visitor visitor) {
+    public void accept(Visitor visitor) throws Exception {
         visitor.accept(this);
     }
 }

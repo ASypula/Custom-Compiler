@@ -17,7 +17,7 @@ public class AndExpression implements IExpression{
     }
 
     @Override
-    public void accept(Visitor visitor){
+    public void accept(Visitor visitor) throws Exception {
         visitor.accept(this);
     }
 }

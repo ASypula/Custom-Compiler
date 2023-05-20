@@ -1,7 +1,6 @@
 package tkom.components.expressions;
 
 import tkom.common.ParserComponentTypes.OperatorType;
-import tkom.common.tokens.Token;
 import tkom.visitor.Visitor;
 
 public class RelExpression implements IExpression{
@@ -23,7 +22,7 @@ public class RelExpression implements IExpression{
     }
 
     @Override
-    public void accept(Visitor visitor){
+    public void accept(Visitor visitor) throws Exception {
         visitor.accept(this);
     }
 }

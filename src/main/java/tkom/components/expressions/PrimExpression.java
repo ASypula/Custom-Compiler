@@ -18,7 +18,7 @@ public class PrimExpression implements IExpression{
     public PrimExpression(boolean isNegated, Value lit){
         negated = isNegated;
         value = lit;
-        type = ExpressionType.E_LITERAL;
+        type = ExpressionType.E_VALUE;
     }
 
     public PrimExpression(boolean isNegated, IStatement st){

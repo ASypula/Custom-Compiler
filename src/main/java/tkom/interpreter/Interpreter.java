@@ -5,6 +5,7 @@ import tkom.components.*;
 import tkom.components.expressions.*;
 import tkom.components.statements.*;
 import tkom.exception.IncorrectValueException;
+import tkom.exception.InvalidMethodException;
 import tkom.exception.MissingPartException;
 import tkom.visitor.Visitor;
 
@@ -21,11 +22,14 @@ public class Interpreter implements Visitor {
     private Stack<Value> results;
 
     private String mainFunc = "main";
+
+    private double epsilon = 10^-6;
     public Interpreter(HashMap<String, FunctionDef> funcs) throws MissingPartException {
         functions = funcs;
         contexts = new ArrayDeque<>();
-        if (!functions.containsKey(mainFunc))
-            throw new MissingPartException("main function", "runMain in interpreter");
+        results =new Stack<>();
+//        if (!functions.containsKey(mainFunc))
+//            throw new MissingPartException("main function", "runMain in interpreter");
     }
 
     private void assureValue(ValueType type, Value value, String place) throws IncorrectValueException {
@@ -33,37 +37,95 @@ public class Interpreter implements Visitor {
             throw new IncorrectValueException(place, value.getType().name(), type.name());
     }
 
+    private boolean testValueType(ValueType type, Value value){
+        return type == value.getType();
+    }
+
+    private boolean isValueTrue(Value value) throws Exception {
+        if (testValueType(ValueType.V_BOOL, value))
+            return value.getBoolValue();
+        if (testValueType(ValueType.V_DOUBLE, value))
+            return value.getDoubleValue() > epsilon;
+        if (testValueType(ValueType.V_INT, value))
+            return value.getIntValue() > epsilon;
+        if (testValueType(ValueType.V_STRING, value))
+            return value.getStringValue() != null;
+        else
+            throw new IncorrectValueException("test value", value.getType().name(), "value evaluated to true or false");
+    }
+
     @Override
-    public void accept(AndExpression andExpr)  {
+    public void accept(AndExpression andExpr) throws Exception {
         andExpr.left.accept(this);
         Value result = results.pop();
-//        assureValue(ValueType.V_BOOL, result, "AndExpression");
-        andExpr.right.accept(this);
+        if (andExpr.right == null)
+            results.push(result);
+        else {
+            if (!isValueTrue(result)) {
+                // false - no need for further processing
+                results.push(new Value(false));
+            } else {
+                andExpr.right.accept(this);
+                result = results.pop();
+                results.push(new Value(isValueTrue(result)));
+            }
+        }
     }
 
     @Override
-    public void accept(ArithmExpression arithmExpr) {
-
+    public void accept(ArithmExpression arithmExpr) throws Exception {
+        arithmExpr.left.accept(this);
+        Value result = results.pop();
+        if (arithmExpr.right == null)
+            results.push(result);
+        else {
+            //TODO
+        }
     }
 
     @Override
-    public void accept(Expression expr) {
-
+    public void accept(Expression expr) throws Exception {
+        expr.left.accept(this);
+        Value result = results.pop();
+        if (expr.right == null)
+            results.push(result);
+        else {
+            if (isValueTrue(result)) {
+                // true - no need for further processing
+                results.push(new Value(true));
+            } else {
+                expr.right.accept(this);
+                result = results.pop();
+                results.push(new Value(isValueTrue(result)));
+            }
+        }
     }
 
     @Override
-    public void accept(MultExpression multExpr) {
-
+    public void accept(MultExpression multExpr) throws Exception {
+        multExpr.left.accept(this);
+        Value result = results.pop();
+        if (multExpr.right == null)
+            results.push(result);
+        else {
+            //TODO
+        }
     }
 
     @Override
     public void accept(PrimExpression primExpr) {
-
+        results.push(primExpr.value);
     }
 
     @Override
-    public void accept(RelExpression relExpe) {
-
+    public void accept(RelExpression relExpr) throws Exception {
+        relExpr.left.accept(this);
+        Value result = results.pop();
+        if (relExpr.right == null)
+            results.push(result);
+        else {
+            //TODO
+        }
     }
 
     @Override

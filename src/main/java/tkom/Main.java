@@ -2,6 +2,9 @@ package tkom;
 
 import tkom.common.ExceptionHandler;
 import tkom.components.Program;
+import tkom.components.expressions.Expression;
+import tkom.components.expressions.IExpression;
+import tkom.interpreter.Interpreter;
 import tkom.lexer.Lexer;
 import tkom.parser.Parser;
 import tkom.visitor.Visitor;
@@ -20,10 +23,25 @@ public class Main
         BufferedReader br=new BufferedReader(fr);
         Lexer myLexer = new Lexer(br, excHandler);
         Parser myParser = new Parser(myLexer, excHandler);
-        Program program = myParser.parse();
-        Visitor visitor = new VisitorPrint();
-        program.accept(visitor);
+//        Program program = parseProgram(br, excHandler);
+//        Visitor visitor = new Interpreter(program.functions);
+        Visitor visitor = new Interpreter(null);
+        myParser.nextToken();
+        IExpression expr = myParser.parseExpression();
+        expr.accept(visitor);
+    }
 
+    public static Program parseProgram(BufferedReader br, ExceptionHandler excHandler) throws Exception {
+        Lexer myLexer = new Lexer(br, excHandler);
+        Parser myParser = new Parser(myLexer, excHandler);
+        Program program = myParser.parse();
+        return program;
+    }
+
+//    public static void runProgram(Program program){
+//        Interpreter interpreter = new Interpreter(program.functions);
+//        interpreter.runMain();
+//    }
 
         // For displaying
 //        JFrame fr = new JFrame();
@@ -66,5 +84,4 @@ public class Main
 //        System.out.println( "Hello World!" );
 //        fr.add(pn1);
 //        fr.setVisible(true);
-    }
 }

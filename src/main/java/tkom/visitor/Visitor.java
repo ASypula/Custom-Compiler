@@ -7,28 +7,28 @@ import tkom.components.statements.*;
 public interface Visitor {
 
     // expressions
-    void accept(AndExpression andExpr);
-    void accept(ArithmExpression arithmExpr);
-    void accept(Expression expr);
-    void accept(MultExpression multExpr);
+    void accept(AndExpression andExpr) throws Exception;
+    void accept(ArithmExpression arithmExpr) throws Exception;
+    void accept(Expression expr) throws Exception;
+    void accept(MultExpression multExpr) throws Exception;
     void accept(PrimExpression primExpr);
-    void accept(RelExpression relExpe);
+    void accept(RelExpression relExpe) throws Exception;
 
     // statements
-    void accept(AssignStatement assignStmt);
-    void accept(IfStatement ifStmt);
+    void accept(AssignStatement assignStmt) throws Exception;
+    void accept(IfStatement ifStmt) throws Exception;
     void accept(LiteralStatement literalStmt);
     void accept(PrintStatement printStmt);
-    void accept(ReturnStatement returnStmt);
-    void accept(WhileStatement whileStmt);
+    void accept(ReturnStatement returnStmt) throws Exception;
+    void accept(WhileStatement whileStmt) throws Exception;
 
     // others
-    void accept(Block block);
-    void accept(FunctionCall funcCall);
-    void accept(FunctionDef funcDef);
+    void accept(Block block) throws Exception;
+    void accept(FunctionCall funcCall) throws Exception;
+    void accept(FunctionDef funcDef) throws Exception;
     void accept(Value value);
-    void accept(ObjectAccess objAccess);
+    void accept(ObjectAccess objAccess) throws Exception;
     void accept(Parameter parameter);
-    void accept(Program program);
+    void accept(Program program) throws Exception;
 
 }
