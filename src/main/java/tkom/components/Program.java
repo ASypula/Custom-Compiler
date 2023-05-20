@@ -1,6 +1,7 @@
 package tkom.components;
 
 import tkom.exception.InvalidMethodException;
+import tkom.exception.MissingPartException;
 import tkom.visitor.Visitable;
 import tkom.visitor.Visitor;
 
@@ -25,7 +26,7 @@ public class Program implements Visitable {
     }
 
     @Override
-    public void accept(Visitor visitor){
+    public void accept(Visitor visitor) {
         visitor.accept(this);
     }
 }

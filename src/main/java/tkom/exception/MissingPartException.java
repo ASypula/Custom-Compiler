@@ -8,4 +8,8 @@ public class MissingPartException extends Exception{
     public MissingPartException(Token t, String missingPart, String missingFrom){
         super("Program is missing " + missingPart + " in the " + missingFrom + " at " + t.getPosition().toString());
     }
+
+    public MissingPartException(String missingPart, String missingFrom){
+        super("Program is missing " + missingPart + " in the " + missingFrom);
+    }
 }

@@ -10,7 +10,7 @@ public class VisitorPrint implements Visitor{
     int spaces = 0;
 
     @Override
-    public void accept(AndExpression andExpr) {
+    public void accept(AndExpression andExpr){
         print(andExpr);
         spaces += 2;
         andExpr.left.accept(this);
@@ -19,7 +19,7 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(ArithmExpression arithmExpr) {
+    public void accept(ArithmExpression arithmExpr){
         print(arithmExpr);
         spaces += 2;
         arithmExpr.left.accept(this);
