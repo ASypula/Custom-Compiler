@@ -137,8 +137,8 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(Literal literal) {
-        print(literal);
+    public void accept(Value value) {
+        print(value);
     }
 
     @Override

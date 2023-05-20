@@ -3,8 +3,7 @@ package tkom.ParserTest;
 import org.junit.Test;
 import tkom.common.ExceptionHandler;
 import tkom.common.ParserComponentTypes.ExpressionType;
-import tkom.common.ParserComponentTypes.LiteralType;
-import tkom.common.tokens.TokenType;
+import tkom.common.ParserComponentTypes.ValueType;
 import tkom.components.*;
 import tkom.components.expressions.*;
 import tkom.components.statements.*;
@@ -46,7 +45,7 @@ public class ParserTest {
         String x = "5";
         initParser(x);
         myParser.nextToken();
-        Literal lit = myParser.parseLiteral();
+        Value lit = myParser.parseValue();
         assertEquals(lit.getIntValue(), 5);
     }
 
@@ -55,7 +54,7 @@ public class ParserTest {
         String x = "hello";
         initParser(x);
         myParser.nextToken();
-        Literal lit = myParser.parseLiteral();
+        Value lit = myParser.parseValue();
         assertThrows(InvalidMethodException.class, () -> lit.getIntValue());
     }
 
@@ -64,7 +63,7 @@ public class ParserTest {
         String x = "5.1";
         initParser(x);
         myParser.nextToken();
-        Literal lit = myParser.parseLiteral();
+        Value lit = myParser.parseValue();
         assertEquals(lit.getDoubleValue(), 5.1, 10^-6);
     }
 
@@ -73,9 +72,9 @@ public class ParserTest {
         String x = "\"hello\"";
         initParser(x);
         myParser.nextToken();
-        Literal lit = myParser.parseLiteral();
+        Value lit = myParser.parseValue();
         assertEquals(lit.getStringValue(), "hello");
-        assertEquals(lit.getType(), LiteralType.L_STRING);
+        assertEquals(lit.getType(), ValueType.V_STRING);
     }
 
     @Test
@@ -83,9 +82,9 @@ public class ParserTest {
         String x = "hello";
         initParser(x);
         myParser.nextToken();
-        Literal lit = myParser.parseLiteral();
+        Value lit = myParser.parseValue();
         assertEquals(lit.getIdentifierValue(), x);
-        assertEquals(lit.getType(), LiteralType.L_IDENT);
+        assertEquals(lit.getType(), ValueType.V_IDENT);
     }
 
     @Test
@@ -93,9 +92,8 @@ public class ParserTest {
         String x = "Point";
         initParser(x);
         myParser.nextToken();
-        Literal lit = myParser.parseLiteral();
-        assertEquals(lit.getType(), LiteralType.L_CLASS);
-        assertEquals(lit.getTokenType(), TokenType.T_POINT);
+        Value lit = myParser.parseValue();
+        assertEquals(lit.getType(), ValueType.V_CLASS);
     }
 
     @Test
@@ -110,8 +108,8 @@ public class ParserTest {
         PrimExpression leftExpr = (PrimExpression)((MultExpression)expr).left;
         PrimExpression rightExpr = (PrimExpression)((MultExpression)expr).right;
         assertEquals(leftExpr.type, ExpressionType.E_LITERAL);
-        assertEquals(leftExpr.literal.getIntValue(), 2);
-        assertEquals(rightExpr.literal.getIntValue(), 5);
+        assertEquals(leftExpr.value.getIntValue(), 2);
+        assertEquals(rightExpr.value.getIntValue(), 5);
     }
 
     @Test
@@ -126,8 +124,8 @@ public class ParserTest {
         PrimExpression leftExpr = (PrimExpression)((MultExpression)expr).left;
         PrimExpression rightExpr = (PrimExpression)((MultExpression)expr).right;
         assertEquals(leftExpr.type, ExpressionType.E_LITERAL);
-        assertEquals(leftExpr.literal.getIntValue(), 2);
-        assertEquals(rightExpr.literal.getIntValue(), 5);
+        assertEquals(leftExpr.value.getIntValue(), 2);
+        assertEquals(rightExpr.value.getIntValue(), 5);
     }
 
     @Test
@@ -142,8 +140,8 @@ public class ParserTest {
         PrimExpression leftExpr = (PrimExpression)((ArithmExpression)expr).left;
         PrimExpression rightExpr = (PrimExpression)((ArithmExpression)expr).right;
         assertEquals(leftExpr.type, ExpressionType.E_LITERAL);
-        assertEquals(leftExpr.literal.getIntValue(), 2);
-        assertEquals(rightExpr.literal.getIntValue(), 5);
+        assertEquals(leftExpr.value.getIntValue(), 2);
+        assertEquals(rightExpr.value.getIntValue(), 5);
     }
 
     @Test
@@ -160,7 +158,7 @@ public class ParserTest {
         PrimExpression rightExpr = (PrimExpression)((ArithmExpression)expr).right;
         assertThat(leftExpr.right, instanceOf(PrimExpression.class));
         assertEquals(rightExpr.type, ExpressionType.E_LITERAL);
-        assertEquals(rightExpr.literal.getIntValue(), 2);
+        assertEquals(rightExpr.value.getIntValue(), 2);
     }
 
     @Test
@@ -175,8 +173,8 @@ public class ParserTest {
         PrimExpression leftExpr = (PrimExpression)((ArithmExpression)expr).left;
         PrimExpression rightExpr = (PrimExpression)((ArithmExpression)expr).right;
         assertEquals(leftExpr.type, ExpressionType.E_LITERAL);
-        assertEquals(leftExpr.literal.getIntValue(), 2);
-        assertEquals(rightExpr.literal.getDoubleValue(), 5.4, 10^-6);
+        assertEquals(leftExpr.value.getIntValue(), 2);
+        assertEquals(rightExpr.value.getDoubleValue(), 5.4, 10^-6);
     }
 
     @Test
@@ -191,9 +189,9 @@ public class ParserTest {
         PrimExpression leftExpr = (PrimExpression)((ArithmExpression)expr).left;
         PrimExpression rightExpr = (PrimExpression)((ArithmExpression)expr).right;
         assertEquals(leftExpr.type, ExpressionType.E_LITERAL);
-        assertEquals(leftExpr.literal.getIdentifierValue(), "x");
-        assertEquals(leftExpr.literal.getType(), LiteralType.L_IDENT);
-        assertEquals(rightExpr.literal.getDoubleValue(), 5.4, 10^-6);
+        assertEquals(leftExpr.value.getIdentifierValue(), "x");
+        assertEquals(leftExpr.value.getType(), ValueType.V_IDENT);
+        assertEquals(rightExpr.value.getDoubleValue(), 5.4, 10^-6);
     }
 
     @Test
@@ -208,9 +206,9 @@ public class ParserTest {
         PrimExpression leftExpr = (PrimExpression)((ArithmExpression)expr).left;
         PrimExpression rightExpr = (PrimExpression)((ArithmExpression)expr).right;
         assertEquals(rightExpr.type, ExpressionType.E_LITERAL);
-        assertEquals(rightExpr.literal.getIdentifierValue(), "x");
-        assertEquals(rightExpr.literal.getType(), LiteralType.L_IDENT);
-        assertEquals(leftExpr.literal.getDoubleValue(), 5.4, 10^-6);
+        assertEquals(rightExpr.value.getIdentifierValue(), "x");
+        assertEquals(rightExpr.value.getType(), ValueType.V_IDENT);
+        assertEquals(leftExpr.value.getDoubleValue(), 5.4, 10^-6);
     }
 
     @Test
@@ -241,9 +239,9 @@ public class ParserTest {
         PrimExpression leftExpr = (PrimExpression)((AndExpression)expr).left;
         PrimExpression rightExpr = (PrimExpression)((AndExpression)expr).right;
         assertEquals(rightExpr.type, ExpressionType.E_LITERAL);
-        assertEquals(rightExpr.literal.getIdentifierValue(), "y");
-        assertEquals(rightExpr.literal.getType(), LiteralType.L_IDENT);
-        assertEquals(leftExpr.literal.getIdentifierValue(), "x");
+        assertEquals(rightExpr.value.getIdentifierValue(), "y");
+        assertEquals(rightExpr.value.getType(), ValueType.V_IDENT);
+        assertEquals(leftExpr.value.getIdentifierValue(), "x");
     }
 
     @Test
@@ -356,7 +354,7 @@ public class ParserTest {
         assertEquals(identifier, "w");
         assertThat(expr, instanceOf(PrimExpression.class));
         assertEquals(((PrimExpression)expr).type, ExpressionType.E_LITERAL);
-        Literal lit = ((PrimExpression)expr).literal;
+        Value lit = ((PrimExpression)expr).value;
         assertEquals(lit.getIntValue(), 5);
     }
 

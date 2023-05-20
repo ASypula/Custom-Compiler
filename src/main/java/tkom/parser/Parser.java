@@ -1,7 +1,7 @@
 package tkom.parser;
 
 import tkom.common.ExceptionHandler;
-import tkom.common.ParserComponentTypes.LiteralType;
+import tkom.common.ParserComponentTypes.ValueType;
 import tkom.common.tokens.Token;
 import tkom.common.tokens.TokenType;
 import tkom.components.*;
@@ -66,23 +66,23 @@ public class Parser {
     }
 
     /**
-     * Parse: literal = bool | integer | double | string | identifier;
+     * Parse: value = bool | integer | double | string | identifier;
      */
-    public Literal parseLiteral(){
+    public Value parseValue(){
         if (isCurrToken(TokenType.T_INT))
-            return new Literal(currToken.getIntValue());
+            return new Value(currToken.getIntValue());
         else if (isCurrToken(TokenType.T_DOUBLE))
-            return new Literal(currToken.getDoubleValue());
+            return new Value(currToken.getDoubleValue());
         else if (isCurrToken(TokenType.T_STRING))
-            return new Literal(currToken.getStringValue(), LiteralType.L_STRING);
+            return new Value(currToken.getStringValue(), ValueType.V_STRING);
         else if (isCurrToken(TokenType.T_IDENT))
-            return new Literal(currToken.getStringValue(), LiteralType.L_IDENT);
+            return new Value(currToken.getStringValue(), ValueType.V_IDENT);
         else if (Arrays.asList(classTokens).contains(currToken.getType()))
-            return new Literal(currToken.getStringValue(), LiteralType.L_CLASS, currToken.getType());
+            return new Value(currToken.getStringValue(), ValueType.V_CLASS);
         else if (isCurrToken(TokenType.T_TRUE))
-            return new Literal(true);
+            return new Value(true);
         else if (isCurrToken(TokenType.T_FALSE))
-            return new Literal(false);
+            return new Value(false);
         else
             return null;
     }
@@ -105,7 +105,6 @@ public class Parser {
         }
         return left;
     }
-//TODO: function call after or before dot
 
 
     /**
@@ -172,7 +171,7 @@ public class Parser {
     }
 
     /**
-     * Parse: prim_expr = [ negation ], ( literal | ident_start_stmt | “(“, expr, “)” );
+     * Parse: prim_expr = [ negation ], ( value | ident_start_stmt | “(“, expr, “)” );
      */
     private IExpression parsePrimExpression() throws InvalidTokenException, IOException, ExceededLimitsException, MissingPartException {
         boolean isNegated = false;
@@ -183,13 +182,13 @@ public class Parser {
         IStatement stmt = parseIdentStartStmt();
         if (stmt != null){
             if (stmt instanceof LiteralStatement)
-                return new PrimExpression(isNegated, new Literal(((LiteralStatement) stmt).getIdentifier(), LiteralType.L_IDENT));
+                return new PrimExpression(isNegated, new Value(((LiteralStatement) stmt).getIdentifier(), ValueType.V_IDENT));
             return (IExpression) stmt;
         }
-        Literal literal = parseLiteral();
-        if (literal != null){
+        Value value = parseValue();
+        if (value != null){
             nextToken();
-            return new PrimExpression(isNegated, literal);
+            return new PrimExpression(isNegated, value);
         }
         else if (consumeIfToken(TokenType.T_REG_BRACKET_L)){
             IExpression expr = parseExpression();

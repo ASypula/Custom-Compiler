@@ -49,9 +49,9 @@ public class ParserMixTest {
         assertEquals(rightExpr.isDivision(), false);
         PrimExpression leftMultExpr = (PrimExpression)rightExpr.left;
         PrimExpression  rightMultExpr = (PrimExpression)rightExpr.right;
-        assertEquals(leftExpr.literal.getIntValue(), 2);
-        assertEquals(leftMultExpr.literal.getIdentifierValue(), "y");
-        assertEquals(rightMultExpr.literal.getDoubleValue(), 5.1, 10^-6);
+        assertEquals(leftExpr.value.getIntValue(), 2);
+        assertEquals(leftMultExpr.value.getIdentifierValue(), "y");
+        assertEquals(rightMultExpr.value.getDoubleValue(), 5.1, 10^-6);
     }
 
     @Test

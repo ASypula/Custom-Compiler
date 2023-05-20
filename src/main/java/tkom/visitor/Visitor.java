@@ -26,7 +26,7 @@ public interface Visitor {
     void accept(Block block);
     void accept(FunctionCall funcCall);
     void accept(FunctionDef funcDef);
-    void accept(Literal literal);
+    void accept(Value value);
     void accept(ObjectAccess objAccess);
     void accept(Parameter parameter);
     void accept(Program program);

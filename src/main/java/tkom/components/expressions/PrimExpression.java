@@ -1,23 +1,23 @@
 package tkom.components.expressions;
 
 import tkom.common.ParserComponentTypes.ExpressionType;
-import tkom.components.Literal;
+import tkom.components.Value;
 import tkom.components.statements.IStatement;
 import tkom.visitor.Visitor;
 
 public class PrimExpression implements IExpression{
     public boolean negated;
 
-    public Literal literal = null;
+    public Value value = null;
     public IStatement stmt = null;
     public IExpression expr = null;
 
     public ExpressionType type;
 
 
-    public PrimExpression(boolean isNegated, Literal lit){
+    public PrimExpression(boolean isNegated, Value lit){
         negated = isNegated;
-        literal = lit;
+        value = lit;
         type = ExpressionType.E_LITERAL;
     }
 
