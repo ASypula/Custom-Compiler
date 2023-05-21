@@ -78,11 +78,17 @@ public class Interpreter implements Visitor {
     public void accept(ArithmExpression arithmExpr) throws Exception {
         arithmExpr.left.accept(this);
         Value result = results.pop();
-        if (arithmExpr.right == null)
-            results.push(result);
-        else {
-            //TODO
+        if (arithmExpr.right != null) {
+            arithmExpr.right.accept(this);
+            Value element = results.pop();
+            if (!isNumber(element) || !isNumber(result))
+                throw new InvalidMethodException("Non numerical value", "arithmetic operation");
+            if (arithmExpr.isSubtraction())
+                result = arithmExpr.subtract(result, element);
+            else
+                result = arithmExpr.add(result, element);
         }
+        results.push(result);
     }
 
     @Override
