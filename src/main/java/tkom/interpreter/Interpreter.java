@@ -93,6 +93,17 @@ public class Interpreter implements Visitor {
         throw new UnknownVariableException(name);
     }
 
+    private void addArgumentsToContext (ArrayList<Parameter> params, ArrayList<IExpression> args) throws Exception {
+        if (params.size() != args.size())
+            throw new InvalidMethodException("function call", "same number of args as params in functionDef");
+        for (int i = 0; i< params.size(); ++i){
+            args.get(i).accept(this);
+            Value value = results.pop();
+            updateContext(params.get(i).name, value);
+        }
+        //TODO: test
+    }
+
     @Override
     public void accept(AndExpression andExpr) throws Exception {
         andExpr.left.accept(this);
@@ -182,7 +193,23 @@ public class Interpreter implements Visitor {
         if (relExpr.right == null)
             results.push(result);
         else {
-            //TODO
+            relExpr.right.accept(this);
+            Value rightRes = results.pop();
+            if (isDifferentType(result, rightRes)) {
+                results.push(new Value(false));
+                return;
+            }
+            boolean bool = switch(result.getType()){
+                case V_INT:
+                    yield relExpr.evaluate(result.getIntValue(), rightRes.getIntValue());
+                case V_DOUBLE:
+                    yield relExpr.evaluate(result.getDoubleValue(), rightRes.getDoubleValue());
+                case V_STRING:
+                    yield relExpr.evaluate(result.getStringValue(), rightRes.getStringValue());
+                default:
+                    yield false;
+            };
+            results.push(new Value(bool));
         }
     }
 
@@ -196,8 +223,18 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(IfStatement ifStmt) {
-
+    public void accept(IfStatement ifStmt) throws Exception{
+        contexts.push(new Context());
+        ifStmt.getCondition().accept(this);
+        Value result = results.pop();
+        if (isValueTrue(result)) {
+            ifStmt.getBlockTrue().accept(this);
+        } else {
+            if (ifStmt.getBlockElse() == null)
+                throw new MissingPartException("else block", "If statement");
+            ifStmt.getBlockElse().accept(this);
+        }
+        contexts.pop();
     }
 
     @Override
@@ -231,8 +268,15 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(FunctionCall funcCall) {
-
+    public void accept(FunctionCall funcCall) throws Exception {
+        //TODO:
+        String name = funcCall.getName();
+        if (!functions.containsKey(name))
+            throw new MissingPartException("function definition for " + name, "program");
+        contexts.push(new Context());
+        addArgumentsToContext(functions.get(name).getParams(), funcCall.getArguments());
+        functions.get(name).getBlock().accept(this);
+        contexts.pop();
     }
 
     @Override
