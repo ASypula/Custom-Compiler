@@ -23,4 +23,5 @@ public class ExceededLimitsException extends Exception {
     public ExceededLimitsException(Position pos, String number) {
         super("Number that will exceed possible limit: " + number + " at the position: " + pos.toString());
     }
+
 }

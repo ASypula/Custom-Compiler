@@ -29,6 +29,7 @@ public class Main
         myParser.nextToken();
         IExpression expr = myParser.parseExpression();
         expr.accept(visitor);
+        System.out.println("Hello");
     }
 
     public static Program parseProgram(BufferedReader br, ExceptionHandler excHandler) throws Exception {

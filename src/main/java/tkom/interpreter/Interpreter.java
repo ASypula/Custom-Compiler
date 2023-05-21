@@ -4,9 +4,7 @@ import tkom.common.ParserComponentTypes.ValueType;
 import tkom.components.*;
 import tkom.components.expressions.*;
 import tkom.components.statements.*;
-import tkom.exception.IncorrectValueException;
-import tkom.exception.InvalidMethodException;
-import tkom.exception.MissingPartException;
+import tkom.exception.*;
 import tkom.visitor.Visitor;
 
 import java.util.ArrayDeque;
@@ -52,6 +50,10 @@ public class Interpreter implements Visitor {
             return value.getStringValue() != null;
         else
             throw new IncorrectValueException("test value", value.getType().name(), "value evaluated to true or false");
+    }
+
+    private boolean isNumber(Value value){
+        return testValueType(ValueType.V_INT, value) || testValueType(ValueType.V_DOUBLE, value);
     }
 
     @Override
@@ -105,11 +107,17 @@ public class Interpreter implements Visitor {
     public void accept(MultExpression multExpr) throws Exception {
         multExpr.left.accept(this);
         Value result = results.pop();
-        if (multExpr.right == null)
-            results.push(result);
-        else {
-            //TODO
+        if (multExpr.right != null) {
+            multExpr.right.accept(this);
+            Value element = results.pop();
+            if (!isNumber(element) || !isNumber(result))
+                throw new InvalidMethodException("Non numerical value", "multiplication");
+            if (multExpr.isDivision())
+                result = multExpr.divide(result, element);
+            else
+                result = multExpr.multiply(result, element);
         }
+        results.push(result);
     }
 
     @Override
