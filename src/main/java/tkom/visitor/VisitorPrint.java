@@ -46,7 +46,7 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(PrimExpression primExpr) {
+    public void accept(PrimExpression primExpr) throws Exception {
         print(primExpr);
     }
 

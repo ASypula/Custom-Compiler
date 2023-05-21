@@ -7,10 +7,8 @@ import tkom.components.statements.*;
 import tkom.exception.*;
 import tkom.visitor.Visitor;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Stack;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Interpreter implements Visitor {
 
@@ -20,6 +18,7 @@ public class Interpreter implements Visitor {
     private Stack<Value> results;
 
     private String mainFunc = "main";
+    private ArrayList<String> classNames = new ArrayList<>(Arrays.asList("Point", "Figure", "FigCollection", "Line", "List"));
 
     private double epsilon = 10^-6;
     public Interpreter(HashMap<String, FunctionDef> funcs) throws MissingPartException {
@@ -54,6 +53,44 @@ public class Interpreter implements Visitor {
 
     private boolean isNumber(Value value){
         return testValueType(ValueType.V_INT, value) || testValueType(ValueType.V_DOUBLE, value);
+    }
+
+    /**
+     * Check if provided identifier can be used as variable name:
+     * cannot be a name of a class nor a function name
+     */
+    private boolean isCorrectIdentifier(String identifier){
+        //TODO:
+        return true;
+//        if (classNames.contains(identifier))
+//            return false;
+//        ArrayList<String> listOfKeys
+//                = functions.keySet().stream().collect(
+//                Collectors.toCollection(ArrayList::new));
+//        return !listOfKeys.contains(identifier);
+    }
+
+    private boolean isDifferentType(Value x, Value y){
+        return x.getType() != y.getType();
+    }
+
+    private void updateContext(String identifier, Value value) throws IncorrectTypeException {
+        Context currContext = contexts.pop();
+        if (currContext.map.containsKey(identifier) && isDifferentType(value, currContext.map.get(identifier)))
+            throw new IncorrectTypeException(value.getType().toString(), currContext.map.get(identifier).getType().toString());
+        currContext.map.put(identifier, value);
+        contexts.push(currContext);
+    }
+
+    private Value getValue(String name) throws UnknownVariableException {
+        Iterator<Context> it = contexts.iterator();
+        Context context;
+        while (it.hasNext()) {
+            context = it.next();
+            if (context.map.containsKey(name))
+                return context.map.get(name);
+        }
+        throw new UnknownVariableException(name);
     }
 
     @Override
@@ -127,7 +164,14 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(PrimExpression primExpr) {
+    public void accept(PrimExpression primExpr) throws Exception {
+        Value value = primExpr.value;
+        if (testValueType(ValueType.V_IDENT, value)){
+            if (isCorrectIdentifier(value.getIdentifierValue())){
+                results.push(getValue(value.getIdentifierValue()));
+                return;
+            }
+        }
         results.push(primExpr.value);
     }
 
@@ -143,8 +187,12 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(AssignStatement assignStmt) {
-
+    public void accept(AssignStatement assignStmt) throws Exception {
+        if (!isCorrectIdentifier(assignStmt.getIdentifier()))
+            throw new IncorrectValueException("AssignStatement", "built-in name: class or function name", "identifier");
+        assignStmt.getExpression().accept(this);
+        Value result = results.pop();
+        updateContext(assignStmt.getIdentifier(), result);
     }
 
     @Override
@@ -173,8 +221,13 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(Block block) {
-
+    public void accept(Block block) throws Exception {
+        contexts.push(new Context());
+        ArrayList<IStatement> stmts = block.getStmts();
+        for (IStatement stmt : stmts){
+            stmt.accept(this);
+        }
+        contexts.pop();
     }
 
     @Override

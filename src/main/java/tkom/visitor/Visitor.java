@@ -11,7 +11,7 @@ public interface Visitor {
     void accept(ArithmExpression arithmExpr) throws Exception;
     void accept(Expression expr) throws Exception;
     void accept(MultExpression multExpr) throws Exception;
-    void accept(PrimExpression primExpr);
+    void accept(PrimExpression primExpr) throws Exception;
     void accept(RelExpression relExpe) throws Exception;
 
     // statements
