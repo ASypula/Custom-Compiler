@@ -1,5 +1,6 @@
 package tkom.interpreter;
 
+import tkom.common.ParserComponentTypes.ExpressionType;
 import tkom.common.ParserComponentTypes.ValueType;
 import tkom.components.*;
 import tkom.components.expressions.*;
@@ -20,7 +21,9 @@ public class Interpreter implements Visitor {
     private String mainFunc = "main";
     private ArrayList<String> classNames = new ArrayList<>(Arrays.asList("Point", "Figure", "FigCollection", "Line", "List"));
 
-    private double epsilon = 10^-6;
+    private double epsilon = Math.pow(10, -6);
+
+    private boolean createNewContext = true;
     public Interpreter(HashMap<String, FunctionDef> funcs) throws MissingPartException {
         functions = funcs;
         contexts = new ArrayDeque<>();
@@ -75,9 +78,20 @@ public class Interpreter implements Visitor {
     }
 
     private void updateContext(String identifier, Value value) throws IncorrectTypeException {
+        Iterator<Context> it = contexts.iterator();
+        Context context;
+        while (it.hasNext()) {
+            context = it.next();
+            if (context.map.containsKey(identifier)) {
+                if (isDifferentType(value, context.map.get(identifier)))
+                    throw new IncorrectTypeException(value.getType().toString(), context.map.get(identifier).getType().toString());
+                else {
+                    context.map.put(identifier, value);
+                    return;
+                }
+            }
+        }
         Context currContext = contexts.pop();
-        if (currContext.map.containsKey(identifier) && isDifferentType(value, currContext.map.get(identifier)))
-            throw new IncorrectTypeException(value.getType().toString(), currContext.map.get(identifier).getType().toString());
         currContext.map.put(identifier, value);
         contexts.push(currContext);
     }
@@ -176,14 +190,20 @@ public class Interpreter implements Visitor {
 
     @Override
     public void accept(PrimExpression primExpr) throws Exception {
-        Value value = primExpr.value;
+        Value value;
+        if (primExpr.type != ExpressionType.E_VALUE){
+            primExpr.expr.accept(this);
+            value = results.pop();
+        }
+        else
+            value = primExpr.value;
         if (testValueType(ValueType.V_IDENT, value)){
             if (isCorrectIdentifier(value.getIdentifierValue())){
                 results.push(getValue(value.getIdentifierValue()));
                 return;
             }
         }
-        results.push(primExpr.value);
+        results.push(value);
     }
 
     @Override
@@ -230,9 +250,8 @@ public class Interpreter implements Visitor {
         if (isValueTrue(result)) {
             ifStmt.getBlockTrue().accept(this);
         } else {
-            if (ifStmt.getBlockElse() == null)
-                throw new MissingPartException("else block", "If statement");
-            ifStmt.getBlockElse().accept(this);
+            if (ifStmt.getBlockElse() != null)
+                ifStmt.getBlockElse().accept(this);
         }
         contexts.pop();
     }
@@ -243,8 +262,22 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(PrintStatement printStmt) {
-
+    public void accept(PrintStatement printStmt) throws Exception {
+        if (printStmt.vType == ValueType.V_STRING)
+            System.out.println(printStmt.value);
+        else if (printStmt.vType == ValueType.V_INT)
+            System.out.println(printStmt.value);
+        else {
+            Value value = getValue(printStmt.value);
+            if (testValueType(ValueType.V_INT, value))
+                System.out.println(value.getIntValue());
+            else if (testValueType(ValueType.V_DOUBLE, value))
+                System.out.println(value.getDoubleValue());
+            else if (testValueType(ValueType.V_STRING, value))
+                System.out.println(value.getStringValue());
+            else
+                throw new IncorrectValueException("PrintStatement", "non-string", "string identifier");
+        }
     }
 
     @Override
@@ -253,18 +286,30 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(WhileStatement whileStmt) {
-
+    public void accept(WhileStatement whileStmt) throws Exception {
+        contexts.push(new Context());
+        createNewContext = false;
+        whileStmt.getCondition().accept(this);
+        Value condition = results.pop();
+        while (isValueTrue(condition)){
+            whileStmt.getBlock().accept(this);
+            whileStmt.getCondition().accept(this);
+            condition = results.pop();
+        }
+        createNewContext = true;
+        contexts.pop();
     }
 
     @Override
     public void accept(Block block) throws Exception {
-        contexts.push(new Context());
+        if (createNewContext)
+            contexts.push(new Context());
         ArrayList<IStatement> stmts = block.getStmts();
         for (IStatement stmt : stmts){
             stmt.accept(this);
         }
-        contexts.pop();
+        if (createNewContext)
+            contexts.pop();
     }
 
     @Override

@@ -84,7 +84,7 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(PrintStatement printStmt) {
+    public void accept(PrintStatement printStmt) throws Exception {
         print(printStmt);
     }
 

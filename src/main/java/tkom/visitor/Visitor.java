@@ -18,7 +18,7 @@ public interface Visitor {
     void accept(AssignStatement assignStmt) throws Exception;
     void accept(IfStatement ifStmt) throws Exception;
     void accept(LiteralStatement literalStmt);
-    void accept(PrintStatement printStmt);
+    void accept(PrintStatement printStmt) throws Exception;
     void accept(ReturnStatement returnStmt) throws Exception;
     void accept(WhileStatement whileStmt) throws Exception;
 

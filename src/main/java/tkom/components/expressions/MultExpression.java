@@ -12,7 +12,7 @@ public class MultExpression implements IExpression{
     public IExpression right;
     boolean division;
 
-    private double epsilon = 10^-6;
+    private double epsilon = Math.pow(10, -6);
 
     public MultExpression(IExpression l, IExpression r, boolean isDivision){
         left = l;

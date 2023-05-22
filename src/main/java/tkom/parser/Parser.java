@@ -333,16 +333,15 @@ public class Parser {
             throw new MissingPartException(currToken, "bracket (", "PrintStatement");
         if (!isCurrToken(TokenType.T_IDENT) && !isCurrToken(TokenType.T_STRING))
             throw new MissingPartException(currToken, "string or identifier", "PrintStatement");
-        TokenType t = currToken.getType();
+        ValueType v = currToken.getType()==TokenType.T_STRING?ValueType.V_STRING:ValueType.V_IDENT;
         String textOrIdent = currToken.getStringValue();
         nextToken();
         if (!consumeIfToken(TokenType.T_REG_BRACKET_R))
             throw new MissingPartException(currToken, "bracket )", "PrintStatement");
         if (!consumeIfToken( TokenType.T_SEMICOLON))
             throw new MissingPartException(currToken, "semicolon ';'", "the end of a statement");
-        return new PrintStatement(t, textOrIdent);
+        return new PrintStatement(v, textOrIdent);
     }
-
 
     /**
      * Parse: stmt = if_stmt | while_stmt | return_stmt | print_stmt | ident_start_stmt;

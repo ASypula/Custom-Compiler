@@ -1,19 +1,19 @@
 package tkom.components.statements;
 
-import tkom.common.tokens.TokenType;
+import tkom.common.ParserComponentTypes.ValueType;
 import tkom.visitor.Visitor;
 
 public class PrintStatement implements IStatement{
-    TokenType tType;
-    String value;
+    public ValueType vType;
+    public String value;
 
-    public PrintStatement (TokenType t, String val){
-        tType = t;
+    public PrintStatement (ValueType v, String val){
+        vType = v;
         value = val;
     }
 
     @Override
-    public void accept(Visitor visitor){
+    public void accept(Visitor visitor) throws Exception {
         visitor.accept(this);
     }
 }
