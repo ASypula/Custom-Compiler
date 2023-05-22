@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class Interpreter implements Visitor {
 
-    private final HashMap<String, FunctionDef> functions;
+    public final HashMap<String, FunctionDef> functions;
     private Deque<Context> contexts;
 
     private Stack<Value> results;
@@ -28,8 +28,16 @@ public class Interpreter implements Visitor {
         functions = funcs;
         contexts = new ArrayDeque<>();
         results =new Stack<>();
-//        if (!functions.containsKey(mainFunc))
-//            throw new MissingPartException("main function", "runMain in interpreter");
+    }
+
+    public void runMain() throws Exception {
+        if (!containsMain())
+            throw new MissingPartException("main function", "runMain in interpreter");
+        functions.get(mainFunc).accept(this);
+    }
+
+    private boolean containsMain(){
+        return functions.containsKey(mainFunc);
     }
 
     private void assureValue(ValueType type, Value value, String place) throws IncorrectValueException {
@@ -63,14 +71,12 @@ public class Interpreter implements Visitor {
      * cannot be a name of a class nor a function name
      */
     private boolean isCorrectIdentifier(String identifier){
-        //TODO:
-        return true;
-//        if (classNames.contains(identifier))
-//            return false;
-//        ArrayList<String> listOfKeys
-//                = functions.keySet().stream().collect(
-//                Collectors.toCollection(ArrayList::new));
-//        return !listOfKeys.contains(identifier);
+        if (classNames.contains(identifier))
+            return false;
+        ArrayList<String> listOfKeys
+                = functions.keySet().stream().collect(
+                Collectors.toCollection(ArrayList::new));
+        return !listOfKeys.contains(identifier);
     }
 
     private boolean isDifferentType(Value x, Value y){
@@ -110,12 +116,13 @@ public class Interpreter implements Visitor {
     private void addArgumentsToContext (ArrayList<Parameter> params, ArrayList<IExpression> args) throws Exception {
         if (params.size() != args.size())
             throw new InvalidMethodException("function call", "same number of args as params in functionDef");
+        Context context = contexts.pop();
         for (int i = 0; i< params.size(); ++i){
             args.get(i).accept(this);
             Value value = results.pop();
-            updateContext(params.get(i).name, value);
+            context.map.put(params.get(i).name, value);
         }
-        //TODO: test
+        contexts.push(context);
     }
 
     @Override
@@ -314,7 +321,6 @@ public class Interpreter implements Visitor {
 
     @Override
     public void accept(FunctionCall funcCall) throws Exception {
-        //TODO:
         String name = funcCall.getName();
         if (!functions.containsKey(name))
             throw new MissingPartException("function definition for " + name, "program");
@@ -325,8 +331,8 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(FunctionDef funcDef) {
-
+    public void accept(FunctionDef funcDef) throws Exception {
+        funcDef.getBlock().accept(this);
     }
 
     @Override

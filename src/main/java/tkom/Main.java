@@ -1,9 +1,11 @@
 package tkom;
 
 import tkom.common.ExceptionHandler;
+import tkom.components.Block;
 import tkom.components.Program;
 import tkom.components.expressions.Expression;
 import tkom.components.expressions.IExpression;
+import tkom.exception.MissingPartException;
 import tkom.interpreter.Interpreter;
 import tkom.lexer.Lexer;
 import tkom.parser.Parser;
@@ -15,21 +17,31 @@ import java.io.*;
 public class Main
 {
     public static void main( String[] args ) throws Exception {
+        test2();
+    }
+
+    public static void test2() throws Exception{
         String filename = "src/main/java/tkom/test.txt";
         ExceptionHandler excHandler = new ExceptionHandler();
-        if (args.length == 1)
-            filename = "src/main/java/tkom/" + args[0];
+        FileReader fr=new FileReader(filename);
+        BufferedReader br=new BufferedReader(fr);
+        Program program = parseProgram(br, excHandler);
+        runProgram(program);
+
+    }
+
+    public static void test() throws Exception{
+        String filename = "src/main/java/tkom/test.txt";
+        ExceptionHandler excHandler = new ExceptionHandler();
         FileReader fr=new FileReader(filename);
         BufferedReader br=new BufferedReader(fr);
         Lexer myLexer = new Lexer(br, excHandler);
         Parser myParser = new Parser(myLexer, excHandler);
-//        Program program = parseProgram(br, excHandler);
-//        Visitor visitor = new Interpreter(program.functions);
         Visitor visitor = new Interpreter(null);
         myParser.nextToken();
-        IExpression expr = myParser.parseExpression();
-        expr.accept(visitor);
-        System.out.println("Hello");
+        Block block = myParser.parseBlock();
+        block.accept(visitor);
+        System.out.println(" ");
     }
 
     public static Program parseProgram(BufferedReader br, ExceptionHandler excHandler) throws Exception {
@@ -39,10 +51,10 @@ public class Main
         return program;
     }
 
-//    public static void runProgram(Program program){
-//        Interpreter interpreter = new Interpreter(program.functions);
-//        interpreter.runMain();
-//    }
+    public static void runProgram(Program program) throws Exception {
+        Interpreter interpreter = new Interpreter(program.functions);
+        interpreter.runMain();
+    }
 
         // For displaying
 //        JFrame fr = new JFrame();

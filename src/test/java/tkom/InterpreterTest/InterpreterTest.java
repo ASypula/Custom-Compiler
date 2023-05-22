@@ -5,16 +5,18 @@ import org.junit.Before;
 import org.junit.Test;
 import tkom.common.ExceptionHandler;
 import tkom.components.Block;
-import tkom.exception.InvalidMethodException;
-import tkom.exception.UnknownVariableException;
-import tkom.exception.ZeroDivisionException;
+import tkom.components.FunctionDef;
+import tkom.components.Program;
+import tkom.exception.*;
 import tkom.interpreter.Interpreter;
 import tkom.lexer.Lexer;
 import tkom.parser.Parser;
 
 import java.io.*;
+import java.util.HashMap;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 public class InterpreterTest {
     private Interpreter myInterpreter;
@@ -44,7 +46,20 @@ public class InterpreterTest {
         ExceptionHandler excHandler = new ExceptionHandler();
         Lexer myLexer = new Lexer(br, excHandler);
         myParser = new Parser(myLexer, excHandler);
-        myInterpreter = new Interpreter(null);
+        HashMap<String, FunctionDef> functions = new HashMap<>();
+        functions.put("main", null);
+        myInterpreter = new Interpreter(functions);
+    }
+
+    private void initFullInterpreter(String input) throws Exception {
+        InputStream initialStream = new ByteArrayInputStream(input.getBytes());
+        Reader targetReader = new InputStreamReader(initialStream);
+        BufferedReader br = new BufferedReader(targetReader);
+        ExceptionHandler excHandler = new ExceptionHandler();
+        Lexer myLexer = new Lexer(br, excHandler);
+        myParser = new Parser(myLexer, excHandler);
+        Program program = myParser.parse();
+        myInterpreter = new Interpreter(program.functions);
     }
 
     private void assertEqualOutput(String expected, String actual){
@@ -108,6 +123,21 @@ public class InterpreterTest {
     }
 
     @Test
+    public void test_AdditionIntDouble() throws Exception {
+        String x = """
+            { 
+                x = 4 + 2.5;
+                print(x);
+            }
+                """;
+        initInterpreter(x);
+        myParser.nextToken();
+        Block block = myParser.parseBlock();
+        block.accept(myInterpreter);
+        assertEqualOutput("6.5", outContent.toString());
+    }
+
+    @Test
     public void test_OrderAdditionAndMultiplication() throws Exception {
         String x = """
             { 
@@ -120,6 +150,20 @@ public class InterpreterTest {
         Block block = myParser.parseBlock();
         block.accept(myInterpreter);
         assertEqualOutput("8", outContent.toString());
+    }
+
+    @Test
+    public void test_ExceptionDifferentTypeAssignment() throws Exception {
+        String x = """
+            { 
+                z = 2;
+                z = "String";
+            }
+                """;
+        initInterpreter(x);
+        myParser.nextToken();
+        Block block = myParser.parseBlock();
+        assertThrows(IncorrectTypeException.class, () -> block.accept(myInterpreter));
     }
 
     @Test
@@ -244,6 +288,113 @@ public class InterpreterTest {
         myParser.nextToken();
         Block block = myParser.parseBlock();
         assertThrows(UnknownVariableException.class, () -> block.accept(myInterpreter));
+    }
+
+    @Test
+    public void test_ExceptionMissingFuncDef() throws Exception {
+        String x = """
+            function main() { 
+                hello();
+            }
+                """;
+        initFullInterpreter(x);
+        assertThrows(MissingPartException.class, () -> myInterpreter.runMain());
+    }
+
+    @Test
+    public void test_ExceptionMissingMainFuncDef() throws Exception {
+        String x = """
+            function dummy() { 
+                i = 0;
+            }
+                """;
+        initFullInterpreter(x);
+        assertThrows(MissingPartException.class, () -> myInterpreter.runMain());
+    }
+
+    @Test
+    public void test_ExceptionDifferentParamsAndArgsCount() throws Exception {
+        String x = """
+            function test(x, y){
+                print("Here");
+            }
+            function main() { 
+                x = 1;
+                test(x);
+            }
+                """;
+        initFullInterpreter(x);
+        assertThrows(InvalidMethodException.class, () -> myInterpreter.runMain());
+    }
+
+    @Test
+    public void test_AssignmentToFunctionName() throws Exception {
+        String x = """
+            function test(x, y){
+                print("Here");
+            }
+            function main() { 
+                test = 2;
+            }
+                """;
+        initFullInterpreter(x);
+        assertThrows(IncorrectValueException.class, () -> myInterpreter.runMain());
+    }
+
+    @Test
+    public void test_FunctionCallWithParams() throws Exception {
+        String x = """
+            function test(x, y){
+                z = x+y;
+                print(z);
+            }
+            function main() { 
+                test(2, 3);
+            }
+                """;
+        initFullInterpreter(x);
+        myInterpreter.runMain();
+        assertEqualOutput("5", outContent.toString());
+    }
+
+    @Test
+    public void test_FunctionCallWithParams2() throws Exception {
+        String x = """
+            function test(x, y, z){
+                x = y*z;
+                w = x+z;
+                print(w);
+            }
+            function main() { 
+                x = 2;
+                test(x, 4, 6);
+            }
+                """;
+        initFullInterpreter(x);
+        myInterpreter.runMain();
+        assertEqualOutput("30", outContent.toString());
+    }
+
+    @Test
+    public void test_NestedFunctionCall() throws Exception {
+        String x = """
+            function test1(x, y) {
+                z = x-y;
+                print(z);
+            }
+            
+            function test(x, y, z){
+                test1(y, x);
+            }
+            function main() { 
+                x = 2;
+                y = 4;
+                test(x, y, 6);
+            }
+                """;
+        initFullInterpreter(x);
+        myInterpreter.runMain();
+        assertEqualOutput("2", outContent.toString());
     }
 
 }
