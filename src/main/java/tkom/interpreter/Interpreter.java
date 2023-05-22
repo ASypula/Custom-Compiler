@@ -9,21 +9,21 @@ import tkom.exception.*;
 import tkom.visitor.Visitor;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Interpreter implements Visitor {
 
     public final HashMap<String, FunctionDef> functions;
-    private Deque<Context> contexts;
+    private final Deque<Context> contexts;
 
-    private Stack<Value> results;
+    private final Stack<Value> results;
 
-    private String mainFunc = "main";
-    private ArrayList<String> classNames = new ArrayList<>(Arrays.asList("Point", "Figure", "FigCollection", "Line", "List"));
+    private final String mainFunc = "main";
+    private final ArrayList<String> classNames = new ArrayList<>(Arrays.asList("Point", "Figure", "FigCollection", "Line", "List"));
 
-    private double epsilon = Math.pow(10, -6);
+    private final double epsilon = Math.pow(10, -6);
 
     private boolean createNewContext = true;
+    private boolean functionReturn = false;
     public Interpreter(HashMap<String, FunctionDef> funcs) throws MissingPartException {
         functions = funcs;
         contexts = new ArrayDeque<>();
@@ -38,11 +38,6 @@ public class Interpreter implements Visitor {
 
     private boolean containsMain(){
         return functions.containsKey(mainFunc);
-    }
-
-    private void assureValue(ValueType type, Value value, String place) throws IncorrectValueException {
-        if (type != value.getType())
-            throw new IncorrectValueException(place, value.getType().name(), type.name());
     }
 
     private boolean testValueType(ValueType type, Value value){
@@ -62,8 +57,8 @@ public class Interpreter implements Visitor {
             throw new IncorrectValueException("test value", value.getType().name(), "value evaluated to true or false");
     }
 
-    private boolean isNumber(Value value){
-        return testValueType(ValueType.V_INT, value) || testValueType(ValueType.V_DOUBLE, value);
+    private boolean notNumber(Value value){
+        return !testValueType(ValueType.V_INT, value) && !testValueType(ValueType.V_DOUBLE, value);
     }
 
     /**
@@ -74,8 +69,10 @@ public class Interpreter implements Visitor {
         if (classNames.contains(identifier))
             return false;
         ArrayList<String> listOfKeys
-                = functions.keySet().stream().collect(
-                Collectors.toCollection(ArrayList::new));
+                = new ArrayList<>(functions.keySet());
+//            ArrayList<String> listOfKeys
+//            = functions.keySet().stream().collect(
+//            Collectors.toCollection(ArrayList::new));
         return !listOfKeys.contains(identifier);
     }
 
@@ -150,7 +147,7 @@ public class Interpreter implements Visitor {
         if (arithmExpr.right != null) {
             arithmExpr.right.accept(this);
             Value element = results.pop();
-            if (!isNumber(element) || !isNumber(result))
+            if (notNumber(element) || notNumber(result))
                 throw new InvalidMethodException("Non numerical value", "arithmetic operation");
             if (arithmExpr.isSubtraction())
                 result = arithmExpr.subtract(result, element);
@@ -185,7 +182,7 @@ public class Interpreter implements Visitor {
         if (multExpr.right != null) {
             multExpr.right.accept(this);
             Value element = results.pop();
-            if (!isNumber(element) || !isNumber(result))
+            if (notNumber(element) || notNumber(result))
                 throw new InvalidMethodException("Non numerical value", "multiplication");
             if (multExpr.isDivision())
                 result = multExpr.divide(result, element);
@@ -264,9 +261,7 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(LiteralStatement literalStmt) {
-
-    }
+    public void accept(LiteralStatement literalStmt) {}
 
     @Override
     public void accept(PrintStatement printStmt) throws Exception {
@@ -288,8 +283,10 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(ReturnStatement returnStmt) {
-
+    public void accept(ReturnStatement returnStmt) throws Exception {
+        if (returnStmt.getExpression() != null)
+            returnStmt.getExpression().accept(this);
+        functionReturn = true;
     }
 
     @Override
@@ -314,6 +311,8 @@ public class Interpreter implements Visitor {
         ArrayList<IStatement> stmts = block.getStmts();
         for (IStatement stmt : stmts){
             stmt.accept(this);
+            if (functionReturn)
+                break;
         }
         if (createNewContext)
             contexts.pop();
@@ -328,6 +327,7 @@ public class Interpreter implements Visitor {
         addArgumentsToContext(functions.get(name).getParams(), funcCall.getArguments());
         functions.get(name).getBlock().accept(this);
         contexts.pop();
+        functionReturn = false;
     }
 
     @Override
@@ -336,22 +336,16 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(Value value) {
-
-    }
+    public void accept(Value value) {}
 
     @Override
     public void accept(ObjectAccess objAccess) {
-
+    //TODO
     }
 
     @Override
-    public void accept(Parameter parameter) {
+    public void accept(Parameter parameter) {}
 
-    }
-
-    public void accept(Program program) {
-
-    }
+    public void accept(Program program) {}
 
 }

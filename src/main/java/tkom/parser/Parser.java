@@ -244,8 +244,6 @@ public class Parser {
         if (!consumeIfToken(TokenType.T_RETURN))
             return null;
         IExpression expr = parseExpression();
-        if (expr == null)
-            throw new MissingPartException(currToken, "expression", "ReturnStatement");
         if (!consumeIfToken(TokenType.T_SEMICOLON))
             throw new InvalidTokenException(currToken, TokenType.T_SEMICOLON);
         return new ReturnStatement(expr);

@@ -80,7 +80,7 @@ public class InterpreterTest {
     @Test
     public void test_ArithmExprAdd() throws Exception {
         String x = """
-            { 
+            {
                 x = 2+2;
                 print(x);
             }
@@ -95,7 +95,7 @@ public class InterpreterTest {
     @Test
     public void test_ArithmExprSubtract() throws Exception {
         String x = """
-            { 
+            {
                 x = 4-2;
                 print(x);
             }
@@ -110,7 +110,7 @@ public class InterpreterTest {
     @Test
     public void test_MultExpr() throws Exception {
         String x = """
-            { 
+            {
                 x = 4*2;
                 print(x);
             }
@@ -125,7 +125,7 @@ public class InterpreterTest {
     @Test
     public void test_AdditionIntDouble() throws Exception {
         String x = """
-            { 
+            {
                 x = 4 + 2.5;
                 print(x);
             }
@@ -140,7 +140,7 @@ public class InterpreterTest {
     @Test
     public void test_OrderAdditionAndMultiplication() throws Exception {
         String x = """
-            { 
+            {
                 z = 2+3*2;
                 print(z);
             }
@@ -155,7 +155,7 @@ public class InterpreterTest {
     @Test
     public void test_ExceptionDifferentTypeAssignment() throws Exception {
         String x = """
-            { 
+            {
                 z = 2;
                 z = "String";
             }
@@ -169,7 +169,7 @@ public class InterpreterTest {
     @Test
     public void test_OrderAdditionAndMultiplicationBrackets() throws Exception {
         String x = """
-            { 
+            {
                 z = (2+3)*2;
                 print(z);
             }
@@ -184,7 +184,7 @@ public class InterpreterTest {
     @Test
     public void test_ExceptionZeroDivision() throws Exception {
         String x = """
-            { 
+            {
                 x = 4/0;
             }
                 """;
@@ -197,7 +197,7 @@ public class InterpreterTest {
     @Test
     public void test_ExceptionStringAddition() throws Exception {
         String x = """
-            { 
+            {
                 x = 4 + "Hello";
             }
                 """;
@@ -258,7 +258,7 @@ public class InterpreterTest {
     @Test
     public void test_While() throws Exception {
         String x = """
-            { 
+            {
                 i = 0;
                 while (i<3){
                     i = i+1;
@@ -276,7 +276,7 @@ public class InterpreterTest {
     @Test
     public void test_ExceptionBlockScope() throws Exception {
         String x = """
-            { 
+            {
                 i = 0;
                 if (true) {
                     z = 0;
@@ -293,7 +293,7 @@ public class InterpreterTest {
     @Test
     public void test_ExceptionMissingFuncDef() throws Exception {
         String x = """
-            function main() { 
+            function main() {
                 hello();
             }
                 """;
@@ -304,7 +304,7 @@ public class InterpreterTest {
     @Test
     public void test_ExceptionMissingMainFuncDef() throws Exception {
         String x = """
-            function dummy() { 
+            function dummy() {
                 i = 0;
             }
                 """;
@@ -318,7 +318,7 @@ public class InterpreterTest {
             function test(x, y){
                 print("Here");
             }
-            function main() { 
+            function main() {
                 x = 1;
                 test(x);
             }
@@ -333,7 +333,7 @@ public class InterpreterTest {
             function test(x, y){
                 print("Here");
             }
-            function main() { 
+            function main() {
                 test = 2;
             }
                 """;
@@ -348,7 +348,7 @@ public class InterpreterTest {
                 z = x+y;
                 print(z);
             }
-            function main() { 
+            function main() {
                 test(2, 3);
             }
                 """;
@@ -365,7 +365,7 @@ public class InterpreterTest {
                 w = x+z;
                 print(w);
             }
-            function main() { 
+            function main() {
                 x = 2;
                 test(x, 4, 6);
             }
@@ -386,7 +386,7 @@ public class InterpreterTest {
             function test(x, y, z){
                 test1(y, x);
             }
-            function main() { 
+            function main() {
                 x = 2;
                 y = 4;
                 test(x, y, 6);
@@ -395,6 +395,39 @@ public class InterpreterTest {
         initFullInterpreter(x);
         myInterpreter.runMain();
         assertEqualOutput("2", outContent.toString());
+    }
+
+    @Test
+    public void test_EmptyReturn() throws Exception {
+        String x = """
+            function test(){
+                print("One");
+                return;
+                print("Two");
+            }
+            function main() {
+                test();
+            }
+                """;
+        initFullInterpreter(x);
+        myInterpreter.runMain();
+        assertEqualOutput("One", outContent.toString());
+    }
+
+    @Test
+    public void test_Return() throws Exception {
+        String x = """
+            function test(){
+                return "success";
+            }
+            function main() {
+                x = test();
+                print(x);
+            }
+                """;
+        initFullInterpreter(x);
+        myInterpreter.runMain();
+        assertEqualOutput("success", outContent.toString());
     }
 
 }
