@@ -13,14 +13,8 @@ public class TokenMap {
         T_KEYWORDS = new HashMap<>();
         T_KEYWORDS.put("else", TokenType.T_ELSE);
         T_KEYWORDS.put("false", TokenType.T_FALSE);
-        T_KEYWORDS.put("Figure", TokenType.T_FIGURE);
-        T_KEYWORDS.put("FigCollection", TokenType.T_FIG_COLL);
         T_KEYWORDS.put("function", TokenType.T_FUNCTION);
         T_KEYWORDS.put("if", TokenType.T_IF);
-        T_KEYWORDS.put("Line", TokenType.T_LINE);
-        T_KEYWORDS.put("List", TokenType.T_LIST);
-        T_KEYWORDS.put("Point", TokenType.T_POINT);
-        T_KEYWORDS.put("print", TokenType.T_PRINT);
         T_KEYWORDS.put("return", TokenType.T_RETURN);
         T_KEYWORDS.put("true", TokenType.T_TRUE);
         T_KEYWORDS.put("while", TokenType.T_WHILE);

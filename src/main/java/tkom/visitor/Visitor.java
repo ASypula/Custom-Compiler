@@ -18,7 +18,6 @@ public interface Visitor {
     void visit(AssignStatement assignStmt) throws Exception;
     void visit(IfStatement ifStmt) throws Exception;
     void visit(LiteralStatement literalStmt);
-    void visit(PrintStatement printStmt) throws Exception;
     void visit(ReturnStatement returnStmt) throws Exception;
     void visit(WhileStatement whileStmt) throws Exception;
 

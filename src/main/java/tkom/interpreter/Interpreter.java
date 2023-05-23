@@ -4,6 +4,7 @@ import tkom.common.ParserComponentTypes.ExpressionType;
 import tkom.common.ParserComponentTypes.ValueType;
 import tkom.components.*;
 import tkom.components.expressions.*;
+import tkom.components.functions.PrintFunction;
 import tkom.components.statements.*;
 import tkom.exception.*;
 import tkom.visitor.Visitor;
@@ -20,6 +21,8 @@ public class Interpreter implements Visitor {
     private final String mainFunc = "main";
     private final ArrayList<String> classNames = new ArrayList<>(Arrays.asList("Point", "Figure", "FigCollection", "Line", "List"));
 
+    private final ArrayList<String> functionNames = new ArrayList<>(Arrays.asList("print"));
+
     private final double epsilon = Math.pow(10, -6);
 
     private boolean createNewContext = true;
@@ -28,6 +31,7 @@ public class Interpreter implements Visitor {
         functions = funcs;
         contexts = new ArrayDeque<>();
         results =new Stack<>();
+        prepareFunctions();
     }
 
     public void runMain() throws Exception {
@@ -38,6 +42,10 @@ public class Interpreter implements Visitor {
 
     private boolean containsMain(){
         return functions.containsKey(mainFunc);
+    }
+
+    private void prepareFunctions(){
+        functions.put("print", new PrintFunction());
     }
 
     private boolean testValueType(ValueType type, Value value){
@@ -99,7 +107,7 @@ public class Interpreter implements Visitor {
         contexts.push(currContext);
     }
 
-    private Value getValue(String name) throws UnknownVariableException {
+    public Value getValue(String name) throws UnknownVariableException {
         Iterator<Context> it = contexts.iterator();
         Context context;
         while (it.hasNext()) {
@@ -263,26 +271,6 @@ public class Interpreter implements Visitor {
     @Override
     public void visit(LiteralStatement literalStmt) {}
 
-    //print stmt
-    @Override
-    public void visit(PrintStatement printStmt) throws Exception {
-        if (printStmt.vType == ValueType.V_STRING)
-            System.out.println(printStmt.value);
-        else if (printStmt.vType == ValueType.V_INT)
-            System.out.println(printStmt.value);
-        else {
-            Value value = getValue(printStmt.value);
-            if (testValueType(ValueType.V_INT, value))
-                System.out.println(value.getIntValue());
-            else if (testValueType(ValueType.V_DOUBLE, value))
-                System.out.println(value.getDoubleValue());
-            else if (testValueType(ValueType.V_STRING, value))
-                System.out.println(value.getStringValue());
-            else
-                throw new IncorrectValueException("PrintStatement", "non-string", "string identifier");
-        }
-    }
-
     @Override
     public void visit(ReturnStatement returnStmt) throws Exception {
         if (returnStmt.getExpression() != null)
@@ -321,13 +309,16 @@ public class Interpreter implements Visitor {
 
     @Override
     public void visit(FunctionCall funcCall) throws Exception {
-        //TODO flaga na custom vs wbudowana funkcje
         String name = funcCall.getName();
         if (!functions.containsKey(name))
             throw new MissingPartException("function definition for " + name, "program");
+        functions.put("print", new PrintFunction());
         contexts.push(new Context());
         addArgumentsToContext(functions.get(name).getParams(), funcCall.getArguments());
-        functions.get(name).getBlock().accept(this);
+        if (functionNames.contains(name))
+            functions.get(name).accept(this);
+        else
+            functions.get(name).getBlock().accept(this);
         contexts.pop();
         functionReturn = false;
     }

@@ -192,7 +192,7 @@ public class LexerTest {
 
     @Test
     public void test_T_FIG_COLL() throws IOException, InvalidTokenException, ExceededLimitsException {
-        Token tokenExp=new Token(TokenType.T_FIG_COLL, new Position(0,0));
+        Token tokenExp=new Token(TokenType.T_IDENT, new Position(0,0));
         String x = "FigCollection";
         initLexer(x);
         Token t = myLexer.getToken();
@@ -201,7 +201,7 @@ public class LexerTest {
 
     @Test
     public void test_T_FIGURE() throws IOException, InvalidTokenException, ExceededLimitsException {
-        Token tokenExp=new Token(TokenType.T_FIGURE, new Position(0,0));
+        Token tokenExp=new Token(TokenType.T_IDENT, new Position(0,0));
         String x = "Figure";
         initLexer(x);
         Token t = myLexer.getToken();
@@ -284,7 +284,7 @@ public class LexerTest {
 
     @Test
     public void test_T_LINE() throws IOException, InvalidTokenException, ExceededLimitsException {
-        Token tokenExp=new Token(TokenType.T_LINE, new Position(0,0));
+        Token tokenExp=new Token(TokenType.T_IDENT, new Position(0,0));
         String x = "Line";
         initLexer(x);
         Token t = myLexer.getToken();
@@ -293,7 +293,7 @@ public class LexerTest {
 
     @Test
     public void test_T_LIST() throws IOException, InvalidTokenException, ExceededLimitsException {
-        Token tokenExp=new Token(TokenType.T_LIST, new Position(0,0));
+        Token tokenExp=new Token(TokenType.T_IDENT, new Position(0,0));
         String x = "List";
         initLexer(x);
         Token t = myLexer.getToken();
@@ -356,7 +356,7 @@ public class LexerTest {
 
     @Test
     public void test_T_POINT() throws IOException, InvalidTokenException, ExceededLimitsException {
-        Token tokenExp=new Token(TokenType.T_POINT, new Position(0,0));
+        Token tokenExp=new Token(TokenType.T_IDENT, new Position(0,0));
         String x = "Point";
         initLexer(x);
         Token t = myLexer.getToken();
@@ -365,7 +365,7 @@ public class LexerTest {
 
     @Test
     public void test_T_PRINT() throws IOException, InvalidTokenException, ExceededLimitsException {
-        Token tokenExp=new Token(TokenType.T_PRINT, new Position(0,0));
+        Token tokenExp=new Token(TokenType.T_IDENT, new Position(0,0));
         String x = "print";
         initLexer(x);
         Token t = myLexer.getToken();
@@ -515,7 +515,7 @@ public class LexerTest {
         expectedTokens.add(new Token(TokenType.T_LESS, new Position(9,0)));
         expectedTokens.add(new Token(TokenType.T_INT, new Position(10,0)));
         expectedTokens.add(new Token(TokenType.T_REG_BRACKET_R, new Position(12,0)));
-        expectedTokens.add(new Token(TokenType.T_PRINT, new Position(0,1)));
+        expectedTokens.add(new Token(TokenType.T_IDENT, new Position(0,1)));
         expectedTokens.add(new Token(TokenType.T_REG_BRACKET_L, new Position(5,1)));
         expectedTokens.add(new Token(TokenType.T_STRING, new Position(6,1)));
         expectedTokens.add(new Token(TokenType.T_REG_BRACKET_R, new Position(13,1)));

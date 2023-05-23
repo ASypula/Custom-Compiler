@@ -93,7 +93,7 @@ public class ParserTest {
         initParser(x);
         myParser.nextToken();
         Value lit = myParser.parseValue();
-        assertEquals(lit.getType(), ValueType.V_CLASS);
+        assertEquals(lit.getType(), ValueType.V_IDENT);
     }
 
     @Test
@@ -364,7 +364,7 @@ public class ParserTest {
         initParser(x);
         myParser.nextToken();
         IStatement stmt = myParser.parseStatement();
-        assertThat(stmt, instanceOf(PrintStatement.class));
+        assertThat(stmt, instanceOf(FunctionCall.class));
     }
 
     @Test
@@ -373,7 +373,7 @@ public class ParserTest {
         initParser(x);
         myParser.nextToken();
         IStatement stmt = myParser.parseStatement();
-        assertThat(stmt, instanceOf(PrintStatement.class));
+        assertThat(stmt, instanceOf(FunctionCall.class));
     }
     @Test
     public void test_StmtFunctionCall() throws Exception {
@@ -429,8 +429,6 @@ public class ParserTest {
         IStatement stmt = myParser.parseIdentStartStmt();
         assertThat(stmt, instanceOf(ObjectAccess.class));
     }
-
-    //TODO: funkcja w dodawaniu
 
     @Test
     public void test_ObjectAccessMore() throws Exception {
@@ -490,7 +488,7 @@ public class ParserTest {
         IStatement stmt0 = block.getStmt(0);
         IStatement stmt1 = block.getStmt(1);
         assertThat(stmt0, instanceOf(AssignStatement.class));
-        assertThat(stmt1, instanceOf(PrintStatement.class));
+        assertThat(stmt1, instanceOf(FunctionCall.class));
     }
 
 }

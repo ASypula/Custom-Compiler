@@ -84,11 +84,6 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void visit(PrintStatement printStmt) throws Exception {
-        print(printStmt);
-    }
-
-    @Override
     public void visit(ReturnStatement returnStmt) throws Exception {
         print(returnStmt);
         spaces+=2;

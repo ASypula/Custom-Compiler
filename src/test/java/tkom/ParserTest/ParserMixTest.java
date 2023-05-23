@@ -9,7 +9,6 @@ import tkom.components.expressions.MultExpression;
 import tkom.components.expressions.PrimExpression;
 import tkom.components.statements.AssignStatement;
 import tkom.components.statements.IStatement;
-import tkom.components.statements.PrintStatement;
 import tkom.exception.ExceededLimitsException;
 import tkom.exception.InvalidMethodException;
 import tkom.exception.InvalidTokenException;
@@ -67,6 +66,6 @@ public class ParserMixTest {
         IStatement stmt0 = block.getStmt(0);
         IStatement stmt1 = block.getStmt(1);
         assertThat(stmt0, instanceOf(AssignStatement.class));
-        assertThat(stmt1, instanceOf(PrintStatement.class));
+        assertThat(stmt1, instanceOf(FunctionCall.class));
     }
 }

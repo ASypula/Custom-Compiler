@@ -24,8 +24,6 @@ public class Parser {
     TokenType[] relationOpArray = {TokenType.T_EQUALS, TokenType.T_GREATER, TokenType.T_GREATER_OR_EQ,
             TokenType.T_LESS, TokenType.T_LESS_OR_EQ, TokenType.T_NOT_EQ};
 
-    TokenType[] classTokens = {TokenType.T_FIGURE, TokenType.T_FIG_COLL, TokenType.T_LINE,
-            TokenType.T_LIST, TokenType.T_POINT};
     public ExceptionHandler excHandler;
     public Parser(ILexer lex, ExceptionHandler eh){
         lexer = lex;
@@ -77,8 +75,8 @@ public class Parser {
             return new Value(currToken.getStringValue(), ValueType.V_STRING);
         else if (isCurrToken(TokenType.T_IDENT))
             return new Value(currToken.getStringValue(), ValueType.V_IDENT);
-        else if (Arrays.asList(classTokens).contains(currToken.getType()))
-            return new Value(currToken.getStringValue(), ValueType.V_CLASS);
+//        else if (Arrays.asList(classTokens).contains(currToken.getType()))
+//            return new Value(currToken.getStringValue(), ValueType.V_CLASS);
         else if (isCurrToken(TokenType.T_TRUE))
             return new Value(true);
         else if (isCurrToken(TokenType.T_FALSE))
@@ -300,7 +298,7 @@ public class Parser {
      * Parse ident_start_stmt = identifier, { assign_stmt | rest_func_call | rest_obj_access }, ';';
      */
     public IStatement parseIdentStartStmt() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
-        if (!isCurrToken(TokenType.T_IDENT) && !Arrays.asList(classTokens).contains(currToken.getType()))
+        if (!isCurrToken(TokenType.T_IDENT))
             return null;
         String identifier;
         if (isCurrToken(TokenType.T_IDENT))
@@ -321,25 +319,25 @@ public class Parser {
         return stmt;
     }
 
-    /**
-     * Parse print_stmt	= “print”, “(“, (string | identifier), “)”, ‘;’ ;
-     */
-    private IStatement parsePrintStatement() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
-        if (!consumeIfToken(TokenType.T_PRINT))
-            return null;
-        if (!consumeIfToken(TokenType.T_REG_BRACKET_L))
-            throw new MissingPartException(currToken, "bracket (", "PrintStatement");
-        if (!isCurrToken(TokenType.T_IDENT) && !isCurrToken(TokenType.T_STRING))
-            throw new MissingPartException(currToken, "string or identifier", "PrintStatement");
-        ValueType v = currToken.getType()==TokenType.T_STRING?ValueType.V_STRING:ValueType.V_IDENT;
-        String textOrIdent = currToken.getStringValue();
-        nextToken();
-        if (!consumeIfToken(TokenType.T_REG_BRACKET_R))
-            throw new MissingPartException(currToken, "bracket )", "PrintStatement");
-        if (!consumeIfToken( TokenType.T_SEMICOLON))
-            throw new MissingPartException(currToken, "semicolon ';'", "the end of a statement");
-        return new PrintStatement(v, textOrIdent);
-    }
+//    /**
+//     * Parse print_stmt	= “print”, “(“, (string | identifier), “)”, ‘;’ ;
+//     */
+//    private IStatement parsePrintStatement() throws InvalidTokenException, ExceededLimitsException, IOException, MissingPartException {
+//        if (!consumeIfToken(TokenType.T_PRINT))
+//            return null;
+//        if (!consumeIfToken(TokenType.T_REG_BRACKET_L))
+//            throw new MissingPartException(currToken, "bracket (", "PrintStatement");
+//        if (!isCurrToken(TokenType.T_IDENT) && !isCurrToken(TokenType.T_STRING))
+//            throw new MissingPartException(currToken, "string or identifier", "PrintStatement");
+//        ValueType v = currToken.getType()==TokenType.T_STRING?ValueType.V_STRING:ValueType.V_IDENT;
+//        String textOrIdent = currToken.getStringValue();
+//        nextToken();
+//        if (!consumeIfToken(TokenType.T_REG_BRACKET_R))
+//            throw new MissingPartException(currToken, "bracket )", "PrintStatement");
+//        if (!consumeIfToken( TokenType.T_SEMICOLON))
+//            throw new MissingPartException(currToken, "semicolon ';'", "the end of a statement");
+//        return new PrintStatement(v, textOrIdent);
+//    }
 
     /**
      * Parse: stmt = if_stmt | while_stmt | return_stmt | print_stmt | ident_start_stmt;
@@ -354,9 +352,9 @@ public class Parser {
         stmt = parseReturnStatement();
         if (stmt != null)
             return stmt;
-        stmt = parsePrintStatement();
-        if (stmt != null)
-            return stmt;
+//        stmt = parsePrintStatement();
+//        if (stmt != null)
+//            return stmt;
         stmt = parseIdentStartStmt();
         if (stmt != null){
             if (!consumeIfToken( TokenType.T_SEMICOLON))

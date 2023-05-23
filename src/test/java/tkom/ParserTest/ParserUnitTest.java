@@ -7,6 +7,7 @@ import tkom.common.ParserComponentTypes.ValueType;
 import tkom.common.Position;
 import tkom.common.tokens.*;
 import tkom.components.Block;
+import tkom.components.FunctionCall;
 import tkom.components.FunctionDef;
 import tkom.components.Value;
 import tkom.components.expressions.*;
@@ -289,7 +290,7 @@ public class ParserUnitTest {
     public void test_PrintStatementIdentifier() throws Exception {
         // "print(x);";
         ArrayList<Token> tList = new ArrayList<>();
-        tList.add(new Token(TokenType.T_PRINT, new Position(0, 0)));
+        tList.add(new Token(TokenType.T_IDENT, new Position(0, 0)));
         tList.add(new Token(TokenType.T_REG_BRACKET_L, new Position(0, 0)));
         tList.add(new TokenString(TokenType.T_IDENT, new Position(0, 0), "x"));
         tList.add(new Token(TokenType.T_REG_BRACKET_R, new Position(0, 0)));
@@ -297,7 +298,7 @@ public class ParserUnitTest {
         initParser(tList);
         myParser.nextToken();
         IStatement stmt = myParser.parseStatement();
-        assertThat(stmt, instanceOf(PrintStatement.class));
+        assertThat(stmt, instanceOf(FunctionCall.class));
     }
 
     @Test
@@ -323,7 +324,7 @@ public class ParserUnitTest {
         tList.add(new Token(TokenType.T_REG_BRACKET_L, new Position(0, 0)));
         tList.add(new Token(TokenType.T_REG_BRACKET_R, new Position(0, 0)));
         tList.add(new Token(TokenType.T_CURLY_BRACKET_L, new Position(0, 0)));
-        tList.add(new Token(TokenType.T_PRINT, new Position(0, 0)));
+        tList.add(new Token(TokenType.T_IDENT, new Position(0, 0)));
         tList.add(new Token(TokenType.T_REG_BRACKET_L, new Position(0, 0)));
         tList.add(new TokenString(TokenType.T_IDENT, new Position(0, 0), "x"));
         tList.add(new Token(TokenType.T_REG_BRACKET_R, new Position(0, 0)));
@@ -344,7 +345,7 @@ public class ParserUnitTest {
         tList.add(new Token(TokenType.T_REG_BRACKET_L, new Position(0, 0)));
         tList.add(new Token(TokenType.T_REG_BRACKET_R, new Position(0, 0)));
         tList.add(new Token(TokenType.T_CURLY_BRACKET_L, new Position(0, 0)));
-        tList.add(new Token(TokenType.T_PRINT, new Position(0, 0)));
+        tList.add(new Token(TokenType.T_IDENT, new Position(0, 0)));
         tList.add(new Token(TokenType.T_REG_BRACKET_L, new Position(0, 0)));
         tList.add(new TokenString(TokenType.T_IDENT, new Position(0, 0), "x"));
         tList.add(new Token(TokenType.T_REG_BRACKET_R, new Position(0, 0)));
@@ -364,7 +365,7 @@ public class ParserUnitTest {
         tList.add(new TokenString(TokenType.T_IDENT, new Position(0, 0), "hello"));
         tList.add(new Token(TokenType.T_REG_BRACKET_L, new Position(0, 0)));
         tList.add(new Token(TokenType.T_CURLY_BRACKET_L, new Position(0, 0)));
-        tList.add(new Token(TokenType.T_PRINT, new Position(0, 0)));
+        tList.add(new Token(TokenType.T_IDENT, new Position(0, 0)));
         tList.add(new Token(TokenType.T_REG_BRACKET_L, new Position(0, 0)));
         tList.add(new TokenString(TokenType.T_IDENT, new Position(0, 0), "x"));
         tList.add(new Token(TokenType.T_REG_BRACKET_R, new Position(0, 0)));
@@ -387,7 +388,7 @@ public class ParserUnitTest {
         tList.add(new Token(TokenType.T_PLUS, new Position(0, 0)));
         tList.add(new TokenInt(TokenType.T_INT, new Position(0, 0), 2));
         tList.add(new Token(TokenType.T_SEMICOLON, new Position(0, 0)));
-        tList.add(new Token(TokenType.T_PRINT, new Position(0, 0)));
+        tList.add(new Token(TokenType.T_IDENT, new Position(0, 0)));
         tList.add(new Token(TokenType.T_REG_BRACKET_L, new Position(0, 0)));
         tList.add(new TokenString(TokenType.T_STRING, new Position(0, 0), "Hi"));
         tList.add(new Token(TokenType.T_REG_BRACKET_R, new Position(0, 0)));
@@ -399,7 +400,7 @@ public class ParserUnitTest {
         IStatement stmt0 = block.getStmt(0);
         IStatement stmt1 = block.getStmt(1);
         assertThat(stmt0, instanceOf(AssignStatement.class));
-        assertThat(stmt1, instanceOf(PrintStatement.class));
+        assertThat(stmt1, instanceOf(FunctionCall.class));
     }
 
 }
