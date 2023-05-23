@@ -7,28 +7,28 @@ import tkom.components.statements.*;
 public interface Visitor {
 
     // expressions
-    void accept(AndExpression andExpr) throws Exception;
-    void accept(ArithmExpression arithmExpr) throws Exception;
-    void accept(Expression expr) throws Exception;
-    void accept(MultExpression multExpr) throws Exception;
-    void accept(PrimExpression primExpr) throws Exception;
-    void accept(RelExpression relExpe) throws Exception;
+    void visit(AndExpression andExpr) throws Exception;
+    void visit(ArithmExpression arithmExpr) throws Exception;
+    void visit(Expression expr) throws Exception;
+    void visit(MultExpression multExpr) throws Exception;
+    void visit(PrimExpression primExpr) throws Exception;
+    void visit(RelExpression relExpe) throws Exception;
 
     // statements
-    void accept(AssignStatement assignStmt) throws Exception;
-    void accept(IfStatement ifStmt) throws Exception;
-    void accept(LiteralStatement literalStmt);
-    void accept(PrintStatement printStmt) throws Exception;
-    void accept(ReturnStatement returnStmt) throws Exception;
-    void accept(WhileStatement whileStmt) throws Exception;
+    void visit(AssignStatement assignStmt) throws Exception;
+    void visit(IfStatement ifStmt) throws Exception;
+    void visit(LiteralStatement literalStmt);
+    void visit(PrintStatement printStmt) throws Exception;
+    void visit(ReturnStatement returnStmt) throws Exception;
+    void visit(WhileStatement whileStmt) throws Exception;
 
     // others
-    void accept(Block block) throws Exception;
-    void accept(FunctionCall funcCall) throws Exception;
-    void accept(FunctionDef funcDef) throws Exception;
-    void accept(Value value);
-    void accept(ObjectAccess objAccess) throws Exception;
-    void accept(Parameter parameter);
-    void accept(Program program) throws Exception;
+    void visit(Block block) throws Exception;
+    void visit(FunctionCall funcCall) throws Exception;
+    void visit(FunctionDef funcDef) throws Exception;
+    void visit(Value value);
+    void visit(ObjectAccess objAccess) throws Exception;
+    void visit(Parameter parameter);
+    void visit(Program program) throws Exception;
 
 }

@@ -15,6 +15,6 @@ public class LiteralStatement implements IStatement{
 
     @Override
     public void accept(Visitor visitor){
-        visitor.accept(this);
+        visitor.visit(this);
     }
 }

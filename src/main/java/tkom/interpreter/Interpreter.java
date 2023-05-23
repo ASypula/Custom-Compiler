@@ -121,9 +121,9 @@ public class Interpreter implements Visitor {
         }
         contexts.push(context);
     }
-
+//TODO: change visit to accept
     @Override
-    public void accept(AndExpression andExpr) throws Exception {
+    public void visit(AndExpression andExpr) throws Exception {
         andExpr.left.accept(this);
         Value result = results.pop();
         if (andExpr.right == null)
@@ -141,7 +141,7 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(ArithmExpression arithmExpr) throws Exception {
+    public void visit(ArithmExpression arithmExpr) throws Exception {
         arithmExpr.left.accept(this);
         Value result = results.pop();
         if (arithmExpr.right != null) {
@@ -158,7 +158,7 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(Expression expr) throws Exception {
+    public void visit(Expression expr) throws Exception {
         expr.left.accept(this);
         Value result = results.pop();
         if (expr.right == null)
@@ -176,7 +176,7 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(MultExpression multExpr) throws Exception {
+    public void visit(MultExpression multExpr) throws Exception {
         multExpr.left.accept(this);
         Value result = results.pop();
         if (multExpr.right != null) {
@@ -193,7 +193,7 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(PrimExpression primExpr) throws Exception {
+    public void visit(PrimExpression primExpr) throws Exception {
         Value value;
         if (primExpr.type != ExpressionType.E_VALUE){
             primExpr.expr.accept(this);
@@ -211,7 +211,7 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(RelExpression relExpr) throws Exception {
+    public void visit(RelExpression relExpr) throws Exception {
         relExpr.left.accept(this);
         Value result = results.pop();
         if (relExpr.right == null)
@@ -238,7 +238,7 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(AssignStatement assignStmt) throws Exception {
+    public void visit(AssignStatement assignStmt) throws Exception {
         if (!isCorrectIdentifier(assignStmt.getIdentifier()))
             throw new IncorrectValueException("AssignStatement", "built-in name: class or function name", "identifier");
         assignStmt.getExpression().accept(this);
@@ -247,7 +247,7 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(IfStatement ifStmt) throws Exception{
+    public void visit(IfStatement ifStmt) throws Exception{
         contexts.push(new Context());
         ifStmt.getCondition().accept(this);
         Value result = results.pop();
@@ -261,10 +261,11 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(LiteralStatement literalStmt) {}
+    public void visit(LiteralStatement literalStmt) {}
 
+    //print stmt
     @Override
-    public void accept(PrintStatement printStmt) throws Exception {
+    public void visit(PrintStatement printStmt) throws Exception {
         if (printStmt.vType == ValueType.V_STRING)
             System.out.println(printStmt.value);
         else if (printStmt.vType == ValueType.V_INT)
@@ -283,14 +284,14 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(ReturnStatement returnStmt) throws Exception {
+    public void visit(ReturnStatement returnStmt) throws Exception {
         if (returnStmt.getExpression() != null)
             returnStmt.getExpression().accept(this);
         functionReturn = true;
     }
 
     @Override
-    public void accept(WhileStatement whileStmt) throws Exception {
+    public void visit(WhileStatement whileStmt) throws Exception {
         contexts.push(new Context());
         createNewContext = false;
         whileStmt.getCondition().accept(this);
@@ -305,7 +306,7 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(Block block) throws Exception {
+    public void visit(Block block) throws Exception {
         if (createNewContext)
             contexts.push(new Context());
         ArrayList<IStatement> stmts = block.getStmts();
@@ -319,7 +320,8 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(FunctionCall funcCall) throws Exception {
+    public void visit(FunctionCall funcCall) throws Exception {
+        //TODO flaga na custom vs wbudowana funkcje
         String name = funcCall.getName();
         if (!functions.containsKey(name))
             throw new MissingPartException("function definition for " + name, "program");
@@ -331,21 +333,21 @@ public class Interpreter implements Visitor {
     }
 
     @Override
-    public void accept(FunctionDef funcDef) throws Exception {
+    public void visit(FunctionDef funcDef) throws Exception {
         funcDef.getBlock().accept(this);
     }
 
     @Override
-    public void accept(Value value) {}
+    public void visit(Value value) {}
 
     @Override
-    public void accept(ObjectAccess objAccess) {
+    public void visit(ObjectAccess objAccess) {
     //TODO
     }
 
     @Override
-    public void accept(Parameter parameter) {}
+    public void visit(Parameter parameter) {}
 
-    public void accept(Program program) {}
+    public void visit(Program program) {}
 
 }

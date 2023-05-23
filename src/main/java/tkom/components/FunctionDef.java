@@ -16,6 +16,8 @@ public class FunctionDef implements Visitable {
         block = blk;
     }
 
+    public FunctionDef(){}
+
     public String getName(){
         return name;
     }
@@ -30,6 +32,6 @@ public class FunctionDef implements Visitable {
 
     @Override
     public void accept(Visitor visitor) throws Exception {
-        visitor.accept(this);
+        visitor.visit(this);
     }
 }

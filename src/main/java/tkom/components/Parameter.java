@@ -12,6 +12,6 @@ public class Parameter implements Visitable {
 
     @Override
     public void accept(Visitor visitor){
-        visitor.accept(this);
+        visitor.visit(this);
     }
 }

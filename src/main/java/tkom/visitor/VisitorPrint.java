@@ -10,7 +10,7 @@ public class VisitorPrint implements Visitor{
     int spaces = 0;
 
     @Override
-    public void accept(AndExpression andExpr) throws Exception {
+    public void visit(AndExpression andExpr) throws Exception {
         print(andExpr);
         spaces += 2;
         andExpr.left.accept(this);
@@ -19,7 +19,7 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(ArithmExpression arithmExpr) throws Exception {
+    public void visit(ArithmExpression arithmExpr) throws Exception {
         print(arithmExpr);
         spaces += 2;
         arithmExpr.left.accept(this);
@@ -28,7 +28,7 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(Expression expr) throws Exception {
+    public void visit(Expression expr) throws Exception {
         print(expr);
         spaces += 2;
         expr.left.accept(this);
@@ -37,7 +37,7 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(MultExpression multExpr) throws Exception {
+    public void visit(MultExpression multExpr) throws Exception {
         print(multExpr);
         spaces += 2;
         multExpr.left.accept(this);
@@ -46,12 +46,12 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(PrimExpression primExpr) throws Exception {
+    public void visit(PrimExpression primExpr) throws Exception {
         print(primExpr);
     }
 
     @Override
-    public void accept(RelExpression relExpr) throws Exception {
+    public void visit(RelExpression relExpr) throws Exception {
         print(relExpr);
         spaces += 2;
         relExpr.left.accept(this);
@@ -60,7 +60,7 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(AssignStatement assignStmt) throws Exception {
+    public void visit(AssignStatement assignStmt) throws Exception {
         print(assignStmt);
         spaces+=2;
         assignStmt.getExpression().accept(this);
@@ -68,7 +68,7 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(IfStatement ifStmt) throws Exception {
+    public void visit(IfStatement ifStmt) throws Exception {
         print(ifStmt);
         spaces+=2;
         ifStmt.getCondition().accept(this);
@@ -79,17 +79,17 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(LiteralStatement literalStmt) {
+    public void visit(LiteralStatement literalStmt) {
         print(literalStmt);
     }
 
     @Override
-    public void accept(PrintStatement printStmt) throws Exception {
+    public void visit(PrintStatement printStmt) throws Exception {
         print(printStmt);
     }
 
     @Override
-    public void accept(ReturnStatement returnStmt) throws Exception {
+    public void visit(ReturnStatement returnStmt) throws Exception {
         print(returnStmt);
         spaces+=2;
         returnStmt.getExpression().accept(this);
@@ -97,7 +97,7 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(WhileStatement whileStmt) throws Exception {
+    public void visit(WhileStatement whileStmt) throws Exception {
         print(whileStmt);
         spaces+=2;
         whileStmt.getCondition().accept(this);
@@ -106,7 +106,7 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(Block block) throws Exception {
+    public void visit(Block block) throws Exception {
         print(block);
         spaces += 2;
         for (IStatement statement : block.getStmts()) {
@@ -116,7 +116,7 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(FunctionCall funcCall) throws Exception {
+    public void visit(FunctionCall funcCall) throws Exception {
         print(funcCall);
         spaces+=2;
         for (IExpression argument : funcCall.getArguments()) {
@@ -126,7 +126,7 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(FunctionDef funcDef) throws Exception {
+    public void visit(FunctionDef funcDef) throws Exception {
         print(funcDef);
         spaces+=2;
         for (Parameter param : funcDef.getParams()) {
@@ -137,12 +137,12 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(Value value) {
+    public void visit(Value value) {
         print(value);
     }
 
     @Override
-    public void accept(ObjectAccess objAccess) throws Exception {
+    public void visit(ObjectAccess objAccess) throws Exception {
         print(objAccess);
         spaces+=2;
         objAccess.getParent().accept(this);
@@ -151,12 +151,12 @@ public class VisitorPrint implements Visitor{
     }
 
     @Override
-    public void accept(Parameter parameter) {
+    public void visit(Parameter parameter) {
         print(parameter);
     }
 
     @Override
-    public void accept(Program program) throws Exception {
+    public void visit(Program program) throws Exception {
         print(program);
         spaces += 2;
         for (FunctionDef funcDef : program.getFunctions()) {

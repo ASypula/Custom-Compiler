@@ -24,7 +24,7 @@ public class FunctionCall implements Visitable, IStatement, IExpression {
     }
     @Override
     public void accept(Visitor visitor) throws Exception {
-        visitor.accept(this);
+        visitor.visit(this);
     }
 }
 

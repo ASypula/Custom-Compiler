@@ -20,6 +20,6 @@ public class AssignStatement implements IStatement {
 
     @Override
     public void accept(Visitor visitor) throws Exception {
-        visitor.accept(this);
+        visitor.visit(this);
     }
 }
