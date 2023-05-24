@@ -431,6 +431,47 @@ public class InterpreterTest {
         myInterpreter.runMain();
         assertEqualOutput("success", outContent.toString());
     }
+
+    @Test
+    public void test_ClassList() throws Exception {
+        String x = """
+            function main() {
+                x = List();
+                x.add(2);
+                x.add(3);
+                w = x.remove();
+                print(w);
+            }
+                """;
+        initFullInterpreter(x);
+        myInterpreter.runMain();
+        assertEqualOutput("3", outContent.toString());
+    }
+
+    @Test
+    public void test_ListTypeException() throws Exception {
+        String x = """
+            function main() {
+                x = List();
+                x.add(2);
+                x.add(2.2);
+            }
+                """;
+        initFullInterpreter(x);
+        assertThrows(IncorrectTypeException.class, () -> myInterpreter.runMain());
+    }
+
+    @Test
+    public void test_ListLimitsException() throws Exception {
+        String x = """
+            function main() {
+                x = List();
+                y = x.remove();
+            }
+                """;
+        initFullInterpreter(x);
+        assertThrows(ExceededLimitsException.class, () -> myInterpreter.runMain());
+    }
 }
 
 

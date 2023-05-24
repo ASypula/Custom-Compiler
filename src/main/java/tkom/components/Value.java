@@ -1,6 +1,8 @@
 package tkom.components;
 
 import tkom.common.ParserComponentTypes.ValueType;
+import tkom.components.classes.IClass;
+import tkom.components.classes.List.ListS;
 import tkom.exception.InvalidMethodException;
 import tkom.visitor.Visitable;
 import tkom.visitor.Visitor;
@@ -11,6 +13,8 @@ public class Value implements Visitable {
     double value;
     String text;
     boolean bool;
+
+    IClass classObject;
 
     public ValueType getType(){
         return type;
@@ -33,6 +37,11 @@ public class Value implements Visitable {
     public Value(boolean val){
         bool = val;
         type = ValueType.V_BOOL;
+    }
+
+    public Value(ListS list){
+        classObject = list;
+        type = ValueType.V_LIST;
     }
 
     public int getIntValue() throws InvalidMethodException {
@@ -68,6 +77,10 @@ public class Value implements Visitable {
             return text;
         else
             throw new InvalidMethodException("Value", "string value");
+    }
+
+    public IClass getObject(){
+        return classObject;
     }
 
     @Override

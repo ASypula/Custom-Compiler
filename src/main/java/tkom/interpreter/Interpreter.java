@@ -3,6 +3,8 @@ package tkom.interpreter;
 import tkom.common.ParserComponentTypes.ExpressionType;
 import tkom.common.ParserComponentTypes.ValueType;
 import tkom.components.*;
+import tkom.components.classes.IClass;
+import tkom.components.classes.List.ListS;
 import tkom.components.expressions.*;
 import tkom.components.functions.PrintFunction;
 import tkom.components.statements.*;
@@ -16,10 +18,12 @@ public class Interpreter implements Visitor {
     public final HashMap<String, FunctionDef> functions;
     private final Deque<Context> contexts;
 
-    private final Stack<Value> results;
+    public final Stack<Value> results;
 
     private final String mainFunc = "main";
     private final ArrayList<String> classNames = new ArrayList<>(Arrays.asList("Point", "Figure", "FigCollection", "Line", "List"));
+
+    private final ArrayList<ValueType> classTypes = new ArrayList<>(Arrays.asList(ValueType.V_LIST));
 
     private final ArrayList<String> functionNames = new ArrayList<>(Arrays.asList("print"));
 
@@ -27,7 +31,7 @@ public class Interpreter implements Visitor {
 
     private boolean createNewContext = true;
     private boolean functionReturn = false;
-    public Interpreter(HashMap<String, FunctionDef> funcs) throws MissingPartException {
+    public Interpreter(HashMap<String, FunctionDef> funcs) {
         functions = funcs;
         contexts = new ArrayDeque<>();
         results =new Stack<>();
@@ -78,9 +82,6 @@ public class Interpreter implements Visitor {
             return false;
         ArrayList<String> listOfKeys
                 = new ArrayList<>(functions.keySet());
-//            ArrayList<String> listOfKeys
-//            = functions.keySet().stream().collect(
-//            Collectors.toCollection(ArrayList::new));
         return !listOfKeys.contains(identifier);
     }
 
@@ -129,7 +130,7 @@ public class Interpreter implements Visitor {
         }
         contexts.push(context);
     }
-//TODO: change visit to accept
+
     @Override
     public void visit(AndExpression andExpr) throws Exception {
         andExpr.left.accept(this);
@@ -310,16 +311,19 @@ public class Interpreter implements Visitor {
     @Override
     public void visit(FunctionCall funcCall) throws Exception {
         String name = funcCall.getName();
-        if (!functions.containsKey(name))
+        if (!functions.containsKey(name) && !classNames.contains(name))
             throw new MissingPartException("function definition for " + name, "program");
-        functions.put("print", new PrintFunction());
-        contexts.push(new Context());
-        addArgumentsToContext(functions.get(name).getParams(), funcCall.getArguments());
-        if (functionNames.contains(name))
-            functions.get(name).accept(this);
-        else
-            functions.get(name).getBlock().accept(this);
-        contexts.pop();
+        if (classNames.contains(name))
+            results.push(new Value(new ListS()));
+        else{
+            contexts.push(new Context());
+            addArgumentsToContext(functions.get(name).getParams(), funcCall.getArguments());
+            if (functionNames.contains(name))
+                functions.get(name).accept(this);
+            else
+                functions.get(name).getBlock().accept(this);
+            contexts.pop();
+        }
         functionReturn = false;
     }
 
@@ -332,8 +336,22 @@ public class Interpreter implements Visitor {
     public void visit(Value value) {}
 
     @Override
-    public void visit(ObjectAccess objAccess) {
-    //TODO
+    public void visit(ObjectAccess objAccess) throws Exception{
+        if (objAccess.getExpression() instanceof FunctionCall){
+            Value value = getValue(objAccess.getName());
+            if (! classTypes.contains(value.getType()))
+                throw new Exception();
+            IClass obj = value.getObject();
+            String method = ((FunctionCall) objAccess.getExpression()).getName();
+            if (obj.containsMethod(method)){
+                FunctionDef function = obj.getMethod(method);
+                contexts.push(new Context());
+                addArgumentsToContext(function.getParams(), ((FunctionCall) objAccess.getExpression()).getArguments());
+                obj.accept(this, method);
+                contexts.pop();
+            }
+        }
+        //TODO attribute access?
     }
 
     @Override
