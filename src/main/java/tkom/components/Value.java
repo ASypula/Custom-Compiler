@@ -2,7 +2,7 @@ package tkom.components;
 
 import tkom.common.ParserComponentTypes.ValueType;
 import tkom.components.classes.IClass;
-import tkom.components.classes.List.ListS;
+import tkom.components.classes.ListS;
 import tkom.exception.InvalidMethodException;
 import tkom.visitor.Visitable;
 import tkom.visitor.Visitor;

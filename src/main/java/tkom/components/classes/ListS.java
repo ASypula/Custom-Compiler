@@ -1,4 +1,4 @@
-package tkom.components.classes.List;
+package tkom.components.classes;
 
 import tkom.components.Block;
 import tkom.components.FunctionDef;
@@ -7,6 +7,7 @@ import tkom.components.Value;
 import tkom.components.classes.IClass;
 import tkom.exception.ExceededLimitsException;
 import tkom.exception.IncorrectTypeException;
+import tkom.exception.InvalidMethodException;
 import tkom.interpreter.Interpreter;
 import tkom.visitor.Visitor;
 
@@ -29,13 +30,14 @@ public class ListS implements IClass {
     }
 
     @Override
-    public FunctionDef getMethod(String method) {
-        //TODO raise Exception
-        return methods.get(method);
+    public FunctionDef getMethod(String method) throws InvalidMethodException {
+        if (methods.containsKey(method))
+            return methods.get(method);
+        else
+            throw new InvalidMethodException(method, "List method");
     }
 
     public void accept(Visitor visitor, String name) throws Exception {
-        //TODO add exception if name not found
         methods.get(name).accept(visitor);
     }
 

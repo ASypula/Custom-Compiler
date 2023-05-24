@@ -4,7 +4,7 @@ import tkom.common.ParserComponentTypes.ExpressionType;
 import tkom.common.ParserComponentTypes.ValueType;
 import tkom.components.*;
 import tkom.components.classes.IClass;
-import tkom.components.classes.List.ListS;
+import tkom.components.classes.ListS;
 import tkom.components.expressions.*;
 import tkom.components.functions.PrintFunction;
 import tkom.components.statements.*;
