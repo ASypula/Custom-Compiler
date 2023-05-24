@@ -502,6 +502,30 @@ public class InterpreterTest {
         myInterpreter.runMain();
         assertEqualOutput("5", outContent.toString());
     }
+
+    @Test
+    public void test_PointTypeException() throws Exception {
+        String x = """
+            function main() {
+                x = Point(2, "hello");
+            }
+                """;
+        initFullInterpreter(x);
+        assertThrows(IncorrectTypeException.class, () -> myInterpreter.runMain());
+    }
+
+    @Test
+    public void test_LineTypeException() throws Exception {
+        String x = """
+            function main() {
+                p1 = Point(1, 2);
+                w = 3;
+                x = Line(p1, w);
+            }
+                """;
+        initFullInterpreter(x);
+        assertThrows(IncorrectTypeException.class, () -> myInterpreter.runMain());
+    }
 }
 
 

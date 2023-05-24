@@ -339,7 +339,7 @@ public class Interpreter implements Visitor {
         }
         Value objValue = switch (className) {
             case "Line":
-                yield new Value(new Line());
+                yield new Value(new Line(args.get(0), args.get(1)));
             case "List":
                 yield new Value(new ListS());
             case "Point":
@@ -365,8 +365,7 @@ public class Interpreter implements Visitor {
         if (objAccess.getExpression() instanceof FunctionCall){
             Value value = getValue(objAccess.getName());
             if (! classTypes.contains(value.getType()))
-                //TODO change exception
-                throw new Exception();
+                throw new IncorrectTypeException("unknown class type", (value.getType()).toString());
             IClass obj = value.getObject();
             String method = ((FunctionCall) objAccess.getExpression()).getName();
             if (obj.containsMethod(method)){
@@ -385,15 +384,12 @@ public class Interpreter implements Visitor {
             objectAccess = false;
             Value v = results.pop();
             if (v.getType() != ValueType.V_IDENT)
-                //TODO change exception
-                throw new Exception();
+                throw new IncorrectTypeException("identifier", (v.getType()).toString());
             String method = v.getIdentifierValue();
             if (obj.containsMethod(method)){
                 obj.accept(this, method);
             }
-
         }
-        //TODO attribute access?
     }
 
     @Override
