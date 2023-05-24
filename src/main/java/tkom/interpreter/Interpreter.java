@@ -3,8 +3,7 @@ package tkom.interpreter;
 import tkom.common.ParserComponentTypes.ExpressionType;
 import tkom.common.ParserComponentTypes.ValueType;
 import tkom.components.*;
-import tkom.components.classes.IClass;
-import tkom.components.classes.ListS;
+import tkom.components.classes.*;
 import tkom.components.expressions.*;
 import tkom.components.functions.PrintFunction;
 import tkom.components.statements.*;
@@ -23,7 +22,7 @@ public class Interpreter implements Visitor {
     private final String mainFunc = "main";
     private final ArrayList<String> classNames = new ArrayList<>(Arrays.asList("Point", "Figure", "FigCollection", "Line", "List"));
 
-    private final ArrayList<ValueType> classTypes = new ArrayList<>(Arrays.asList(ValueType.V_LIST));
+    private final ArrayList<ValueType> classTypes = new ArrayList<>(Arrays.asList(ValueType.V_LIST, ValueType.V_LINE, ValueType.V_POINT, ValueType.V_FIGURE));
 
     private final ArrayList<String> functionNames = new ArrayList<>(Arrays.asList("print"));
 
@@ -31,6 +30,8 @@ public class Interpreter implements Visitor {
 
     private boolean createNewContext = true;
     private boolean functionReturn = false;
+
+    public boolean objectAccess = false;
     public Interpreter(HashMap<String, FunctionDef> funcs) {
         functions = funcs;
         contexts = new ArrayDeque<>();
@@ -210,7 +211,7 @@ public class Interpreter implements Visitor {
         }
         else
             value = primExpr.value;
-        if (testValueType(ValueType.V_IDENT, value)){
+        if (!objectAccess && testValueType(ValueType.V_IDENT, value)){
             if (isCorrectIdentifier(value.getIdentifierValue())){
                 results.push(getValue(value.getIdentifierValue()));
                 return;
@@ -313,8 +314,10 @@ public class Interpreter implements Visitor {
         String name = funcCall.getName();
         if (!functions.containsKey(name) && !classNames.contains(name))
             throw new MissingPartException("function definition for " + name, "program");
-        if (classNames.contains(name))
-            results.push(new Value(new ListS()));
+        else if (classNames.contains(name)){
+            Value valueObj = createObjValue(name, funcCall);
+            results.push(valueObj);
+        }
         else{
             contexts.push(new Context());
             addArgumentsToContext(functions.get(name).getParams(), funcCall.getArguments());
@@ -325,6 +328,28 @@ public class Interpreter implements Visitor {
             contexts.pop();
         }
         functionReturn = false;
+    }
+
+    private Value createObjValue(String className, FunctionCall funcCall) throws Exception {
+        ArrayList<IExpression> arguments = funcCall.getArguments();
+        ArrayList<Value> args = new ArrayList<>();
+        for (int i = 0; i < arguments.size(); ++i) {
+            arguments.get(i).accept(this);
+            args.add(results.pop());
+        }
+        Value objValue = switch (className) {
+            case "Line":
+                yield new Value(new Line());
+            case "List":
+                yield new Value(new ListS());
+            case "Point":
+                yield new Value(new Point(args.get(0), args.get(1)));
+            case "Figure":
+                yield new Value(new Figure());
+            default:
+                yield null;
+        };
+        return objValue;
     }
 
     @Override
@@ -340,6 +365,7 @@ public class Interpreter implements Visitor {
         if (objAccess.getExpression() instanceof FunctionCall){
             Value value = getValue(objAccess.getName());
             if (! classTypes.contains(value.getType()))
+                //TODO change exception
                 throw new Exception();
             IClass obj = value.getObject();
             String method = ((FunctionCall) objAccess.getExpression()).getName();
@@ -350,6 +376,22 @@ public class Interpreter implements Visitor {
                 obj.accept(this, method);
                 contexts.pop();
             }
+        }
+        else if (objAccess.getExpression() instanceof PrimExpression){
+            Value value = getValue(objAccess.getName());
+            IClass obj = value.getObject();
+            objectAccess = true;
+            objAccess.getExpression().accept(this);
+            objectAccess = false;
+            Value v = results.pop();
+            if (v.getType() != ValueType.V_IDENT)
+                //TODO change exception
+                throw new Exception();
+            String method = v.getIdentifierValue();
+            if (obj.containsMethod(method)){
+                obj.accept(this, method);
+            }
+
         }
         //TODO attribute access?
     }

@@ -472,6 +472,36 @@ public class InterpreterTest {
         initFullInterpreter(x);
         assertThrows(ExceededLimitsException.class, () -> myInterpreter.runMain());
     }
+
+    @Test
+    public void test_ClassPoint() throws Exception {
+        String x = """
+            function main() {
+                point1 = Point(2, 3);
+                point1_x = point1.x;
+                print(point1_x);
+            }
+                """;
+        initFullInterpreter(x);
+        myInterpreter.runMain();
+        assertEqualOutput("2", outContent.toString());
+    }
+
+    @Test
+    public void test_ClassPointAttributes() throws Exception {
+        String x = """
+            function main() {
+                point1 = Point(2, 3);
+                point1_x = point1.x;
+                point1_y = point1.y;
+                w = point1_x + point1_y;
+                print(w);
+            }
+                """;
+        initFullInterpreter(x);
+        myInterpreter.runMain();
+        assertEqualOutput("5", outContent.toString());
+    }
 }
 
 

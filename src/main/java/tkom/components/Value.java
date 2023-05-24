@@ -1,8 +1,7 @@
 package tkom.components;
 
 import tkom.common.ParserComponentTypes.ValueType;
-import tkom.components.classes.IClass;
-import tkom.components.classes.ListS;
+import tkom.components.classes.*;
 import tkom.exception.InvalidMethodException;
 import tkom.visitor.Visitable;
 import tkom.visitor.Visitor;
@@ -42,6 +41,21 @@ public class Value implements Visitable {
     public Value(ListS list){
         classObject = list;
         type = ValueType.V_LIST;
+    }
+
+    public Value(Line line){
+        classObject = line;
+        type = ValueType.V_LINE;
+    }
+
+    public Value(Point point){
+        classObject = point;
+        type = ValueType.V_POINT;
+    }
+
+    public Value(Figure fig){
+        classObject = fig;
+        type = ValueType.V_FIGURE;
     }
 
     public int getIntValue() throws InvalidMethodException {
