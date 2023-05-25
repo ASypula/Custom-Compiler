@@ -113,7 +113,6 @@ public class ListS implements IClass {
             JPanel pn = new JPanel(){
                 @Override
                 public void paint (Graphics g0) {
-                    System.out.println("In paint");
                     Graphics2D g = (Graphics2D)g0.create();
                     for (Figure fig : figures) {
                         ArrayList<Integer> listX = new ArrayList<>();
@@ -125,7 +124,8 @@ public class ListS implements IClass {
                         int[] xs = listX.stream().mapToInt(i->i).toArray();
                         int[] ys = listY.stream().mapToInt(i->i).toArray();
                         Polygon polygon0 = new Polygon(xs, ys, listX.size());
-                        g.setColor(Color.yellow);
+                        g.setStroke(new BasicStroke(6));
+                        g.setColor(new Color(fig.colorR, fig.colorG, fig.colorB));
                         g.drawPolygon(polygon0);
                     }
                 }

@@ -181,7 +181,20 @@ public class InterpreterTest {
         assertEqualOutput("10", outContent.toString());
     }
 
-    //TODO more nested brackets tests
+    @Test
+    public void test_NestedOperations() throws Exception {
+        String x = """
+            {
+                z = 2*((2+3)*2-(3-1)*2);
+                print(z);
+            }
+                """;
+        initInterpreter(x);
+        myParser.nextToken();
+        Block block = myParser.parseBlock();
+        block.accept(myInterpreter);
+        assertEqualOutput("12", outContent.toString());
+    }
 
     @Test
     public void test_ExceptionZeroDivision() throws Exception {
@@ -194,6 +207,21 @@ public class InterpreterTest {
         myParser.nextToken();
         Block block = myParser.parseBlock();
         assertThrows(ZeroDivisionException.class, () -> block.accept(myInterpreter));
+    }
+
+    @Test
+    public void test_StringConcatenation() throws Exception {
+        String x = """
+            function main() {
+                x = "Hello ";
+                y = "world";
+                z = x+y;
+                print(z);
+            }
+                """;
+        initFullInterpreter(x);
+        myInterpreter.runMain();
+        assertEqualOutput("Hello world", outContent.toString());
     }
 
     @Test

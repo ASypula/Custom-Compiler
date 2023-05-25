@@ -34,6 +34,7 @@ public class Interpreter implements Visitor {
     private boolean createNewContext = true;
     private boolean functionReturn = false;
 
+    private boolean withResultStmt = false;
     public boolean objectAccess = false;
     public Interpreter(HashMap<String, FunctionDef> funcs) {
         functions = funcs;
@@ -162,9 +163,11 @@ public class Interpreter implements Visitor {
         if (arithmExpr.right != null) {
             arithmExpr.right.accept(this);
             Value element = results.pop();
-            if (notNumber(element) || notNumber(result))
+            if (element.getType() == ValueType.V_STRING && result.getType()==ValueType.V_STRING)
+                result = arithmExpr.concat(result, element);
+            else if (notNumber(element) || notNumber(result))
                 throw new InvalidMethodException("Non numerical value", "arithmetic operation");
-            if (arithmExpr.isSubtraction())
+            else if (arithmExpr.isSubtraction())
                 result = arithmExpr.subtract(result, element);
             else
                 result = arithmExpr.add(result, element);
@@ -256,9 +259,11 @@ public class Interpreter implements Visitor {
     public void visit(AssignStatement assignStmt) throws Exception {
         if (!isCorrectIdentifier(assignStmt.getIdentifier()))
             throw new IncorrectValueException("AssignStatement", "built-in name: class or function name", "identifier");
+        withResultStmt = true;
         assignStmt.getExpression().accept(this);
         Value result = results.pop();
         updateContext(assignStmt.getIdentifier(), result);
+        withResultStmt = false;
     }
 
     @Override
@@ -314,10 +319,9 @@ public class Interpreter implements Visitor {
             contexts.pop();
     }
 
-    //TODO what if void method?
-
     @Override
     public void visit(FunctionCall funcCall) throws Exception {
+        int size = results.size();
         String name = funcCall.getName();
         if (!functions.containsKey(name) && !classNames.contains(name))
             throw new MissingPartException("function definition for " + name, "program");
@@ -335,6 +339,9 @@ public class Interpreter implements Visitor {
             contexts.pop();
         }
         functionReturn = false;
+        if (!withResultStmt && results.size() > size)
+            results.pop();
+
     }
 
     private Value createObjValue(String className, FunctionCall funcCall) throws Exception {
@@ -369,6 +376,7 @@ public class Interpreter implements Visitor {
 
     @Override
     public void visit(ObjectAccess objAccess) throws Exception{
+        withResultStmt = true;
         if (objAccess.getExpression() instanceof FunctionCall){
             Value value = getValue(objAccess.getName());
             if (! classTypes.contains(value.getType()))
@@ -397,6 +405,7 @@ public class Interpreter implements Visitor {
                 obj.accept(this, method);
             }
         }
+        withResultStmt = false;
     }
 
     @Override

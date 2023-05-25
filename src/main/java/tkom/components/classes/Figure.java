@@ -1,18 +1,28 @@
 package tkom.components.classes;
 
 import tkom.common.ParserComponentTypes.ValueType;
+import tkom.components.Block;
 import tkom.components.FunctionDef;
+import tkom.components.Parameter;
 import tkom.components.Value;
 import tkom.exception.IncorrectFigureException;
 import tkom.exception.IncorrectTypeException;
 import tkom.exception.InvalidMethodException;
+import tkom.interpreter.Interpreter;
 import tkom.visitor.Visitor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Figure implements IClass{
 
     public ArrayList<Point> points;
+
+    public HashMap<String, FunctionDef> methods = new HashMap<>();
+
+    public int colorR=0;
+    public int colorG=0;
+    public int colorB=0;
 
     public Figure(Value value) throws IncorrectFigureException {
         if (value.getType() != ValueType.V_LIST)
@@ -26,6 +36,7 @@ public class Figure implements IClass{
             points = createFigureLines(getListLines(l.list));
         else
             throw new IncorrectFigureException("Incorrect type, Figure constructor requires List of points or lines");
+        methods.put("color", new setColor());
     }
 
     private ArrayList<Point> createFigureLines(ArrayList<Line> lines) throws IncorrectFigureException {
@@ -79,17 +90,52 @@ public class Figure implements IClass{
     }
 
     @Override
-    public boolean containsMethod(String x) {
-        return false;
-    }
+    public boolean containsMethod(String name) {return methods.containsKey(name);}
 
     @Override
-    public FunctionDef getMethod(String x) throws InvalidMethodException {
-        return null;
+    public FunctionDef getMethod(String method) throws InvalidMethodException {
+        if (methods.containsKey(method))
+            return methods.get(method);
+        else
+            throw new InvalidMethodException(method, "Figure method");
     }
 
     @Override
     public void accept(Visitor visitor, String name) throws Exception {
+        methods.get(name).accept(visitor);
+    }
 
+    public class setColor extends FunctionDef {
+        String name = "color";
+
+        String param1 = "r";
+        String param2 = "g";
+        String param3 = "b";
+        ArrayList<Parameter> parameters = new ArrayList<>();
+        Block block = null;
+
+        public setColor() {
+            parameters.add(new Parameter(param1));
+            parameters.add(new Parameter(param2));
+            parameters.add(new Parameter(param3));
+        }
+
+        public String getName(){
+            return name;
+        }
+        public ArrayList<Parameter> getParams(){
+            return parameters;
+        }
+
+        public void accept(Visitor visitor) throws Exception {
+            Value v1 = ((Interpreter)visitor).getValue(param1);
+            Value v2 = ((Interpreter)visitor).getValue(param2);
+            Value v3 = ((Interpreter)visitor).getValue(param3);
+            if (v1.getType() != ValueType.V_INT || v2.getType() != ValueType.V_INT || v3.getType() != ValueType.V_INT)
+                throw new IncorrectTypeException("int", "non int", "setting Figure color");
+            colorR = v1.getIntValue();
+            colorG = v2.getIntValue();
+            colorB = v3.getIntValue();
+        }
     }
 }

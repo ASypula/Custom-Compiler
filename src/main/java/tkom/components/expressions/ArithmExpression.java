@@ -52,6 +52,10 @@ public class ArithmExpression implements IExpression{
         return new Value(sum);
     }
 
+    public Value concat(Value v1, Value v2) throws InvalidMethodException {
+        return new Value(v1.getStringValue() + v2.getStringValue(), ValueType.V_STRING);
+    }
+
     public Value subtract(Value v1, Value v2) throws InvalidMethodException, OverflowException {
         Value negatedValue;
         if (ValueType.V_INT == v2.getType())
