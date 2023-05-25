@@ -1,0 +1,90 @@
+function main(){
+    test2();
+    # diamond();
+    # test3();
+}
+
+function testFigure(){
+    p1 = Point(10, 10);
+    p2 = Point(20, 30);
+    p3 = Point(30, 10);
+    list1 = List();
+    list1.add(p1);
+    list1.add(p2);
+    list1.add(p3);
+    fig1 = Figure(list1);
+    list2 = List();
+    list2.add(fig1);
+    list2.show();
+}
+
+function test2(){
+    i = 0;
+    x = 10;
+    y = 10;
+    list = List();
+    while (i<4){
+        list.add(Point(x, y));
+        x = x+100;
+        y = y+100;
+        i = i+1;
+        print(x);
+        print(y);
+        print(i);
+    }
+    list.add(Point(10, y-100));
+    fig=Figure(list);
+    fig.color(0, 0, 200);
+    figList = List();
+    figList.add(fig);
+    list2 = List();
+    list2.add(Point(300, 200));
+    list2.add(Point(400, 300));
+    list2.add(Point(400, 200));
+    fig2 = Figure(list2);
+    figList.add(fig2);
+    figList.show();
+}
+
+function diamond(){
+    list = List();
+    list.add(Point(200, 200));
+    list.add(Point(220, 185));
+    list.add(Point(230, 185));
+    list.add(Point(250, 200));
+    list.add(Point(225, 240));
+    fig = Figure(list);
+    figList = List();
+    fig.color(169, 169, 13*13);
+    figList.add(fig);
+    figList.show();
+}
+
+function testCall(){
+    return 5;
+}
+
+function testAssign(){
+    x = testCall();
+    testCall();
+    print("Hopefully passed");
+}
+
+function test3(){
+    x=30;
+    y=0;
+    p1=Point(x, y);
+    p2=Point(60, 20);
+    line1=Line(p1, p2);
+    line2=Line(Point(60, 20), Point(0, 20));
+    line3=Line(Point(0, 20), p1);
+    figList1=List();
+    figList1.add(line1);
+    figList1.add(line2);
+    figList1.add(line3);
+    fig1=Figure(figList1);
+    fig1.color(123, 123, 123);
+    figList = List();
+    figList.add(fig1);
+    figList.show();
+}
