@@ -345,7 +345,7 @@ public class Interpreter implements Visitor {
             case "Point":
                 yield new Value(new Point(args.get(0), args.get(1)));
             case "Figure":
-                yield new Value(new Figure());
+                yield new Value(new Figure(args.get(0)));
             default:
                 yield null;
         };

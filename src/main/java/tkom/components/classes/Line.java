@@ -21,6 +21,18 @@ public class Line implements IClass{
             throw new IncorrectTypeException("Point", v1.getType().toString());
         pL = (Point)(v1.getObject());
         pR = (Point)(v2.getObject());
+        if (pL.x == pR.x && pL.y == pR.y)
+            throw new IncorrectTypeException("two different points for a Line", "same points");
+        if (pL.x > pL.x)
+            swap(pL, pR);
+
+    }
+
+    public static void swap(Point p1, Point p2)
+    {
+        Point temp = p1;
+        p1 = p2;
+        p2 = temp;
     }
     @Override
     public boolean containsMethod(String name){
