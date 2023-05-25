@@ -1,5 +1,6 @@
 package tkom.components.classes;
 
+import tkom.common.ParserComponentTypes.ValueType;
 import tkom.components.Block;
 import tkom.components.FunctionDef;
 import tkom.components.Parameter;
@@ -11,6 +12,8 @@ import tkom.exception.InvalidMethodException;
 import tkom.interpreter.Interpreter;
 import tkom.visitor.Visitor;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -22,6 +25,7 @@ public class ListS implements IClass {
     public ListS(){
         methods.put("add", new ListAddFunc());
         methods.put("remove", new ListRemoveFunc());
+        methods.put("show", new ShowFigures());
     }
 
     @Override
@@ -84,6 +88,57 @@ public class ListS implements IClass {
                 ((Interpreter)visitor).results.push(list.get(list.size()-1));
             else
                 throw new ExceededLimitsException("remove in list", "not enough elements");
+        }
+    }
+
+    public class ShowFigures extends FunctionDef {
+        String name = "show";
+        ArrayList<Parameter> parameters = new ArrayList<>();
+        Block block = null;
+
+        public ShowFigures() {}
+
+        public String getName(){
+            return name;
+        }
+        public ArrayList<Parameter> getParams(){
+            return parameters;
+        }
+
+        public void accept(Visitor visitor) throws Exception {
+            if (list.size() > 0 && list.get(0).getType() != ValueType.V_FIGURE)
+                throw new IncorrectTypeException("Figure", (list.get(0).getType()).toString());
+
+            ArrayList<Figure> figures = getListFigures(list);
+            JPanel pn = new JPanel(){
+                @Override
+                public void paint (Graphics g0) {
+                    System.out.println("In paint");
+                    Graphics2D g = (Graphics2D)g0.create();
+                    for (Figure fig : figures) {
+                        ArrayList<Integer> listX = new ArrayList<>();
+                        ArrayList<Integer> listY = new ArrayList<>();
+                        for (Point p: fig.points){
+                            listX.add(p.x);
+                            listY.add(p.y);
+                        }
+                        int[] xs = listX.stream().mapToInt(i->i).toArray();
+                        int[] ys = listY.stream().mapToInt(i->i).toArray();
+                        Polygon polygon0 = new Polygon(xs, ys, listX.size());
+                        g.setColor(Color.yellow);
+                        g.drawPolygon(polygon0);
+                    }
+                }
+            };
+            ((Interpreter)visitor).fr.add(pn);
+            ((Interpreter)visitor).fr.setVisible(true);
+        }
+
+        private ArrayList<Figure> getListFigures(ArrayList<Value> valueList){
+            ArrayList<Figure> newList = new ArrayList<>();
+            for (Value value: valueList)
+                newList.add((Figure)(value.getObject()));
+            return newList;
         }
     }
 

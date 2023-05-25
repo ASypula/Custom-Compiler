@@ -10,6 +10,7 @@ import tkom.components.statements.*;
 import tkom.exception.*;
 import tkom.visitor.Visitor;
 
+import javax.swing.*;
 import java.util.*;
 
 public class Interpreter implements Visitor {
@@ -26,6 +27,8 @@ public class Interpreter implements Visitor {
 
     private final ArrayList<String> functionNames = new ArrayList<>(Arrays.asList("print"));
 
+    public JFrame fr = new JFrame();
+
     private final double epsilon = Math.pow(10, -6);
 
     private boolean createNewContext = true;
@@ -37,6 +40,8 @@ public class Interpreter implements Visitor {
         contexts = new ArrayDeque<>();
         results =new Stack<>();
         prepareFunctions();
+        fr.setBounds(10, 10, 500, 500);
+        fr.setDefaultCloseOperation(3);
     }
 
     public void runMain() throws Exception {
@@ -308,6 +313,8 @@ public class Interpreter implements Visitor {
         if (createNewContext)
             contexts.pop();
     }
+
+    //TODO what if void method?
 
     @Override
     public void visit(FunctionCall funcCall) throws Exception {
