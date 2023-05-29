@@ -50,6 +50,15 @@ public class ParserTest {
     }
 
     @Test
+    public void test_IntLiteral0() throws IOException, InvalidTokenException, ExceededLimitsException, InvalidMethodException {
+        String x = "0";
+        initParser(x);
+        myParser.nextToken();
+        Value lit = myParser.parseValue();
+        assertEquals(lit.getIntValue(), 0);
+    }
+
+    @Test
     public void test_IntLiteralException() throws IOException, InvalidTokenException, ExceededLimitsException, InvalidMethodException {
         String x = "hello";
         initParser(x);

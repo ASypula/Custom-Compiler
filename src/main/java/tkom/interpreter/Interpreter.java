@@ -20,7 +20,7 @@ public class Interpreter implements Visitor {
     public final HashMap<String, FunctionDef> functions;
     private final Deque<Context> contexts;
 
-    public final Stack<Value> results;
+    public Value result;
 
     private final String mainFunc = "main";
     private final ArrayList<String> classNames = new ArrayList<>(Arrays.asList("Point", "Figure", "FigCollection", "Line", "List"));
@@ -41,7 +41,6 @@ public class Interpreter implements Visitor {
     public Interpreter(HashMap<String, FunctionDef> funcs) {
         functions = funcs;
         contexts = new ArrayDeque<>();
-        results =new Stack<>();
         prepareFunctions();
         fr.setBounds(10, 10, 500, 500);
         fr.setDefaultCloseOperation(3);
@@ -134,7 +133,7 @@ public class Interpreter implements Visitor {
         Context context = contexts.pop();
         for (int i = 0; i< params.size(); ++i){
             args.get(i).accept(this);
-            Value value = results.pop();
+            Value value = result;
             context.map.put(params.get(i).name, value);
         }
         contexts.push(context);
@@ -143,17 +142,13 @@ public class Interpreter implements Visitor {
     @Override
     public void visit(AndExpression andExpr) throws Exception {
         andExpr.left.accept(this);
-        Value result = results.pop();
-        if (andExpr.right == null)
-            results.push(result);
-        else {
+        if (andExpr.right != null) {
             if (!isValueTrue(result)) {
                 // false - no need for further processing
-                results.push(new Value(false));
+                result = new Value(false);
             } else {
                 andExpr.right.accept(this);
-                result = results.pop();
-                results.push(new Value(isValueTrue(result)));
+                result = new Value(isValueTrue(result));
             }
         }
     }
@@ -161,55 +156,47 @@ public class Interpreter implements Visitor {
     @Override
     public void visit(ArithmExpression arithmExpr) throws Exception {
         arithmExpr.left.accept(this);
-        Value result = results.pop();
+        Value firstRes = result;
         if (arithmExpr.right != null) {
             arithmExpr.right.accept(this);
-            Value element = results.pop();
-            if (element.getType() == ValueType.V_STRING && result.getType()==ValueType.V_STRING)
-                result = arithmExpr.concat(result, element);
-            else if (notNumber(element) || notNumber(result))
+            Value element = result;
+            if (element.getType() == ValueType.V_STRING && firstRes.getType()==ValueType.V_STRING)
+                result = arithmExpr.concat(firstRes, element);
+            else if (notNumber(element) || notNumber(firstRes))
                 throw new InvalidMethodException("Non numerical value", "arithmetic operation");
             else if (arithmExpr.isSubtraction())
-                result = arithmExpr.subtract(result, element);
+                result = arithmExpr.subtract(firstRes, element);
             else
-                result = arithmExpr.add(result, element);
+                result = arithmExpr.add(firstRes, element);
         }
-        results.push(result);
     }
 
     @Override
     public void visit(Expression expr) throws Exception {
         expr.left.accept(this);
-        Value result = results.pop();
-        if (expr.right == null)
-            results.push(result);
-        else {
-            if (isValueTrue(result)) {
-                // true - no need for further processing
-                results.push(new Value(true));
-            } else {
+        if (expr.right != null) {
+            if (isValueTrue(result))
+                result = new Value(true);
+            else {
                 expr.right.accept(this);
-                result = results.pop();
-                results.push(new Value(isValueTrue(result)));
+                result = new Value(isValueTrue(result));
             }
         }
     }
-//TODO change stack to single value if possible
     @Override
     public void visit(MultExpression multExpr) throws Exception {
         multExpr.left.accept(this);
-        Value result = results.pop();
+        Value firstRes = result;
         if (multExpr.right != null) {
             multExpr.right.accept(this);
-            Value element = results.pop();
-            if (notNumber(element) || notNumber(result))
+            Value element = result;
+            if (notNumber(element) || notNumber(firstRes))
                 throw new InvalidMethodException("Non numerical value", "multiplication");
             if (multExpr.isDivision())
-                result = multExpr.divide(result, element);
+                result = multExpr.divide(firstRes, element);
             else
-                result = multExpr.multiply(result, element);
+                result = multExpr.multiply(firstRes, element);
         }
-        results.push(result);
     }
 
     @Override
@@ -217,43 +204,41 @@ public class Interpreter implements Visitor {
         Value value;
         if (primExpr.type != ExpressionType.E_VALUE){
             primExpr.expr.accept(this);
-            value = results.pop();
+            value = result;
         }
         else
             value = primExpr.value;
         if (!objectAccess && testValueType(ValueType.V_IDENT, value)){
             if (isCorrectIdentifier(value.getIdentifierValue())){
-                results.push(getValue(value.getIdentifierValue()));
+                result = getValue(value.getIdentifierValue());
                 return;
             }
         }
-        results.push(value);
+        result = value;
     }
 
     @Override
     public void visit(RelExpression relExpr) throws Exception {
         relExpr.left.accept(this);
-        Value result = results.pop();
-        if (relExpr.right == null)
-            results.push(result);
-        else {
+        Value leftRes = result;
+        if (relExpr.right != null) {
             relExpr.right.accept(this);
-            Value rightRes = results.pop();
-            if (isDifferentType(result, rightRes)) {
-                results.push(new Value(false));
+            Value rightRes = result;
+            if (isDifferentType(leftRes, rightRes)) {
+                result = new Value(false);
                 return;
             }
             boolean bool = switch(result.getType()){
                 case V_INT:
-                    yield relExpr.evaluate(result.getIntValue(), rightRes.getIntValue());
+                    yield relExpr.evaluate(leftRes.getIntValue(), rightRes.getIntValue());
                 case V_DOUBLE:
-                    yield relExpr.evaluate(result.getDoubleValue(), rightRes.getDoubleValue());
+                    yield relExpr.evaluate(leftRes.getDoubleValue(), rightRes.getDoubleValue());
                 case V_STRING:
-                    yield relExpr.evaluate(result.getStringValue(), rightRes.getStringValue());
+                    yield relExpr.evaluate(leftRes.getStringValue(), rightRes.getStringValue());
                 default:
                     yield false;
             };
-            results.push(new Value(bool));
+            result = new Value(bool);
         }
     }
 
@@ -263,7 +248,6 @@ public class Interpreter implements Visitor {
             throw new IncorrectValueException("AssignStatement", "built-in name: class or function name", "identifier");
         withResultStmt = true;
         assignStmt.getExpression().accept(this);
-        Value result = results.pop();
         updateContext(assignStmt.getIdentifier(), result);
         withResultStmt = false;
     }
@@ -272,7 +256,6 @@ public class Interpreter implements Visitor {
     public void visit(IfStatement ifStmt) throws Exception{
         contexts.push(new Context());
         ifStmt.getCondition().accept(this);
-        Value result = results.pop();
         if (isValueTrue(result)) {
             ifStmt.getBlockTrue().accept(this);
         } else {
@@ -297,11 +280,11 @@ public class Interpreter implements Visitor {
         contexts.push(new Context());
         createNewContext = false;
         whileStmt.getCondition().accept(this);
-        Value condition = results.pop();
+        Value condition = result;
         while (isValueTrue(condition)){
             whileStmt.getBlock().accept(this);
             whileStmt.getCondition().accept(this);
-            condition = results.pop();
+            condition = result;
         }
         createNewContext = true;
         contexts.pop();
@@ -323,14 +306,11 @@ public class Interpreter implements Visitor {
 
     @Override
     public void visit(FunctionCall funcCall) throws Exception {
-        int size = results.size();
         String name = funcCall.getName();
         if (!functions.containsKey(name) && !classNames.contains(name))
             throw new MissingPartException("function definition for " + name, "program");
-        else if (classNames.contains(name)){
-            Value valueObj = createObjValue(name, funcCall);
-            results.push(valueObj);
-        }
+        else if (classNames.contains(name))
+            result = createObjValue(name, funcCall);
         else{
             contexts.push(new Context());
             addArgumentsToContext(functions.get(name).getParams(), funcCall.getArguments());
@@ -341,9 +321,6 @@ public class Interpreter implements Visitor {
             contexts.pop();
         }
         functionReturn = false;
-        if (!withResultStmt && results.size() > size)
-            results.pop();
-
     }
 
     private Value createObjValue(String className, FunctionCall funcCall) throws Exception {
@@ -351,7 +328,7 @@ public class Interpreter implements Visitor {
         ArrayList<Value> args = new ArrayList<>();
         for (int i = 0; i < arguments.size(); ++i) {
             arguments.get(i).accept(this);
-            args.add(results.pop());
+            args.add(result);
         }
         Value objValue = switch (className) {
             case "Line":
@@ -399,7 +376,7 @@ public class Interpreter implements Visitor {
             objectAccess = true;
             objAccess.getExpression().accept(this);
             objectAccess = false;
-            Value v = results.pop();
+            Value v = result;
             if (v.getType() != ValueType.V_IDENT)
                 throw new IncorrectTypeException("identifier", (v.getType()).toString());
             String method = v.getIdentifierValue();
@@ -411,11 +388,11 @@ public class Interpreter implements Visitor {
     }
 
     public void visit(Point.getX functionGetX){
-        results.push(functionGetX.get());
+        result = functionGetX.get();
     }
 
     public void visit(Point.getY functionGetY){
-        results.push(functionGetY.get());
+        result = functionGetY.get();
     }
 
     public void visit(Figure.setColor funcSetColor) throws Exception {
@@ -428,13 +405,11 @@ public class Interpreter implements Visitor {
     }
 
     public void visit(ListS.ListAddFunc funcAdd) throws Exception {
-        Value v = getValue("x");
-        funcAdd.add(v);
+        funcAdd.add(getValue("x"));
     }
 
     public void visit(ListS.ListRemoveFunc funcRemove) throws Exception {
-        Value v = funcRemove.remove();
-        results.push(v);
+        result = funcRemove.remove();
     }
 
     public void visit(ListS.ShowFigures funcShow) throws Exception {
