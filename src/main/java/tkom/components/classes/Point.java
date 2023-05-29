@@ -63,7 +63,7 @@ public class Point implements IClass{
         public Value get(){
             return new Value(x);
         }
-//TODO: add visit
+
         public void accept(Visitor visitor) throws Exception {
             visitor.visit(this);
         }
