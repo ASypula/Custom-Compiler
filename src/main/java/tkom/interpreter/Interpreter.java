@@ -38,6 +38,8 @@ public class Interpreter implements Visitor {
 
     private boolean withResultStmt = false;
     public boolean objectAccess = false;
+
+    private int maxDepth = 100;
     public Interpreter(HashMap<String, FunctionDef> funcs) {
         functions = funcs;
         contexts = new ArrayDeque<>();
@@ -307,6 +309,8 @@ public class Interpreter implements Visitor {
     @Override
     public void visit(FunctionCall funcCall) throws Exception {
         String name = funcCall.getName();
+        if (contexts.size()>maxDepth)
+            throw new ExceededLimitsException("Function call", "number of calls");
         if (!functions.containsKey(name) && !classNames.contains(name))
             throw new MissingPartException("function definition for " + name, "program");
         else if (classNames.contains(name))

@@ -457,7 +457,7 @@ public class InterpreterTest {
         assertEqualOutput("One", outContent.toString());
     }
 
-    //TODO: rekurencja testy, nadpisywanie zmiennej, nieskonczona rekurencja, stos
+    //TODO: rekurencja testy, nadpisywanie zmiennej, nieskonczona rekurencja
 
     @Test
     public void test_Return() throws Exception {
@@ -568,6 +568,71 @@ public class InterpreterTest {
                 """;
         initFullInterpreter(x);
         assertThrows(IncorrectTypeException.class, () -> myInterpreter.runMain());
+    }
+
+    @Test
+    public void test_assigningParamVariable() throws Exception {
+        String x = """
+            function test1(x){
+                x = 5;
+            }
+            
+            function main() {
+                x = 4;
+                test1(x);
+                print(x);
+            }
+                """;
+        initFullInterpreter(x);
+        myInterpreter.runMain();
+        assertEqualOutput("4", outContent.toString());
+    }
+
+    @Test
+    public void test_recursion() throws Exception {
+        String x = """
+            function fibonacci(x){
+                if(x==0){
+                    return 1;
+                }
+                if (x==1){
+                    return 1;
+                }
+                else {
+                    return (fibonacci(x-1)+fibonacci(x-2));
+                }
+            }
+            
+            function main() {
+                print(fibonacci(7));
+            }
+                """;
+        initFullInterpreter(x);
+        myInterpreter.runMain();
+        assertEqualOutput("21", outContent.toString());
+    }
+
+    @Test
+    public void test_ExceededRecursion() throws Exception {
+        String x = """
+            function fibonacci(x){
+                if(x==0){
+                    return 1;
+                }
+                if (x==1){
+                    return 1;
+                }
+                else {
+                    return (fibonacci(x-1)+fibonacci(x-2));
+                }
+            }
+            
+            function main() {
+                print(fibonacci(50));
+            }
+                """;
+        initFullInterpreter(x);
+        assertThrows(ExceededLimitsException.class, () -> myInterpreter.runMain());
     }
 }
 
