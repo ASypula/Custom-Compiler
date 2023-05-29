@@ -15,8 +15,8 @@ import java.util.HashMap;
 
 public class Point implements IClass{
 
-    int x;
-    int y;
+    public int x;
+    public int y;
 
     public HashMap<String, FunctionDef> methods = new HashMap<>();
 
@@ -60,8 +60,12 @@ public class Point implements IClass{
             return parameters;
         }
 
+        public Value get(){
+            return new Value(x);
+        }
+//TODO: add visit
         public void accept(Visitor visitor) throws Exception {
-            ((Interpreter)visitor).results.push(new Value(x));
+            visitor.visit(this);
         }
     }
 
@@ -79,8 +83,12 @@ public class Point implements IClass{
             return parameters;
         }
 
+        public Value get(){
+            return new Value(y);
+        }
+
         public void accept(Visitor visitor) throws Exception {
-            ((Interpreter)visitor).results.push(new Value(y));
+            visitor.visit(this);
         }
     }
 }

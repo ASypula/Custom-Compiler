@@ -1,10 +1,15 @@
 package tkom.visitor;
 
 import tkom.components.*;
+import tkom.components.classes.Figure;
+import tkom.components.classes.ListS;
+import tkom.components.classes.Point;
 import tkom.components.expressions.*;
 import tkom.components.statements.*;
 
 public interface Visitor {
+
+
 
     // expressions
     void visit(AndExpression andExpr) throws Exception;
@@ -29,5 +34,13 @@ public interface Visitor {
     void visit(ObjectAccess objAccess) throws Exception;
     void visit(Parameter parameter);
     void visit(Program program) throws Exception;
+
+    // classes
+    void visit(Point.getX functionGetX);
+    void visit(Point.getY functionGetY);
+    void visit(Figure.setColor funcSetColor) throws Exception;
+    void visit(ListS.ListRemoveFunc funcRemove) throws Exception;
+    void visit(ListS.ListAddFunc funcAdd) throws Exception;
+    void visit(ListS.ShowFigures funcShow) throws Exception;
 
 }

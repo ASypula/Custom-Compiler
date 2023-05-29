@@ -62,11 +62,14 @@ public class ListS implements IClass {
             return parameters;
         }
 
-        public void accept(Visitor visitor) throws Exception {
-            Value v = ((Interpreter)visitor).getValue(param1);
+        public void add(Value v) throws IncorrectTypeException {
             if (list.size() > 0 && list.get(0).getType() != v.getType())
                 throw new IncorrectTypeException((list.get(0).getType()).toString(), (v.getType() ).toString());
             list.add(v);
+        }
+
+        public void accept(Visitor visitor) throws Exception {
+            visitor.visit(this);
         }
     }
 
@@ -83,11 +86,15 @@ public class ListS implements IClass {
             return parameters;
         }
 
-        public void accept(Visitor visitor) throws Exception {
+        public Value remove() throws ExceededLimitsException {
             if (list.size()>0)
-                ((Interpreter)visitor).results.push(list.get(list.size()-1));
+                return list.get(list.size()-1);
             else
                 throw new ExceededLimitsException("remove in list", "not enough elements");
+        }
+
+        public void accept(Visitor visitor) throws Exception {
+            visitor.visit(this);
         }
     }
 
@@ -105,36 +112,15 @@ public class ListS implements IClass {
             return parameters;
         }
 
-        public void accept(Visitor visitor) throws Exception {
-            if (list.size() > 0 && list.get(0).getType() != ValueType.V_FIGURE)
-                throw new IncorrectTypeException("Figure", (list.get(0).getType()).toString());
-
-            ArrayList<Figure> figures = getListFigures(list);
-            JPanel pn = new JPanel(){
-                @Override
-                public void paint (Graphics g0) {
-                    Graphics2D g = (Graphics2D)g0.create();
-                    for (Figure fig : figures) {
-                        ArrayList<Integer> listX = new ArrayList<>();
-                        ArrayList<Integer> listY = new ArrayList<>();
-                        for (Point p: fig.points){
-                            listX.add(p.x);
-                            listY.add(p.y);
-                        }
-                        int[] xs = listX.stream().mapToInt(i->i).toArray();
-                        int[] ys = listY.stream().mapToInt(i->i).toArray();
-                        Polygon polygon0 = new Polygon(xs, ys, listX.size());
-                        g.setStroke(new BasicStroke(6));
-                        g.setColor(new Color(fig.colorR, fig.colorG, fig.colorB));
-                        g.drawPolygon(polygon0);
-                    }
-                }
-            };
-            ((Interpreter)visitor).fr.add(pn);
-            ((Interpreter)visitor).fr.setVisible(true);
+        public ArrayList<Value> getList(){
+            return list;
         }
 
-        private ArrayList<Figure> getListFigures(ArrayList<Value> valueList){
+        public void accept(Visitor visitor) throws Exception {
+            visitor.visit(this);
+        }
+
+        public ArrayList<Figure> getListFigures(ArrayList<Value> valueList){
             ArrayList<Figure> newList = new ArrayList<>();
             for (Value value: valueList)
                 newList.add((Figure)(value.getObject()));

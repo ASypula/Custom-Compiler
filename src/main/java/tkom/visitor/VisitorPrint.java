@@ -2,6 +2,9 @@ package tkom.visitor;
 
 import org.apache.commons.lang3.StringUtils;
 import tkom.components.*;
+import tkom.components.classes.Figure;
+import tkom.components.classes.ListS;
+import tkom.components.classes.Point;
 import tkom.components.expressions.*;
 import tkom.components.statements.*;
 
@@ -159,6 +162,18 @@ public class VisitorPrint implements Visitor{
         }
         spaces -= 2;
     }
+
+    @Override
+    public void visit(Point.getX functionGetX) {}
+
+    @Override
+    public void visit(Point.getY functionGetY) {}
+
+    public void visit(Figure.setColor funcSetColor) throws Exception{}
+    public void visit(ListS.ListRemoveFunc funcRemove) throws Exception{}
+
+    public void visit(ListS.ListAddFunc funcAdd) throws Exception{}
+    public void visit(ListS.ShowFigures funcShow) throws Exception{}
 
     private String space() {
         return "-".repeat(spaces);

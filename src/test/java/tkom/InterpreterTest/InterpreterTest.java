@@ -210,6 +210,19 @@ public class InterpreterTest {
     }
 
     @Test
+    public void test_ExceptionZeroDivision1() throws Exception {
+        String x = """
+            {
+                x = 4/(2-2);
+            }
+                """;
+        initInterpreter(x);
+        myParser.nextToken();
+        Block block = myParser.parseBlock();
+        assertThrows(ZeroDivisionException.class, () -> block.accept(myInterpreter));
+    }
+
+    @Test
     public void test_StringConcatenation() throws Exception {
         String x = """
             function main() {
@@ -443,6 +456,8 @@ public class InterpreterTest {
         myInterpreter.runMain();
         assertEqualOutput("One", outContent.toString());
     }
+
+    //TODO: rekurencja testy, nadpisywanie zmiennej, nieskonczona rekurencja, stos
 
     @Test
     public void test_Return() throws Exception {

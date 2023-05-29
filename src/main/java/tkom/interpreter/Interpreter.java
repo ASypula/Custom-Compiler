@@ -4,6 +4,7 @@ import tkom.common.ParserComponentTypes.ExpressionType;
 import tkom.common.ParserComponentTypes.ValueType;
 import tkom.components.*;
 import tkom.components.classes.*;
+import tkom.components.classes.Point;
 import tkom.components.expressions.*;
 import tkom.components.functions.PrintFunction;
 import tkom.components.statements.*;
@@ -11,6 +12,7 @@ import tkom.exception.*;
 import tkom.visitor.Visitor;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.*;
 
 public class Interpreter implements Visitor {
@@ -192,7 +194,7 @@ public class Interpreter implements Visitor {
             }
         }
     }
-
+//TODO change stack to single value if possible
     @Override
     public void visit(MultExpression multExpr) throws Exception {
         multExpr.left.accept(this);
@@ -406,6 +408,63 @@ public class Interpreter implements Visitor {
             }
         }
         withResultStmt = false;
+    }
+
+    public void visit(Point.getX functionGetX){
+        results.push(functionGetX.get());
+    }
+
+    public void visit(Point.getY functionGetY){
+        results.push(functionGetY.get());
+    }
+
+    public void visit(Figure.setColor funcSetColor) throws Exception {
+        Value v1 = getValue("r");
+        Value v2 = getValue("g");
+        Value v3 = getValue("b");
+        if (v1.getType() != ValueType.V_INT || v2.getType() != ValueType.V_INT || v3.getType() != ValueType.V_INT)
+            throw new IncorrectTypeException("int", "non int", "setting Figure color");
+        funcSetColor.changeColors(v1.getIntValue(), v2.getIntValue(), v3.getIntValue());
+    }
+
+    public void visit(ListS.ListAddFunc funcAdd) throws Exception {
+        Value v = getValue("x");
+        funcAdd.add(v);
+    }
+
+    public void visit(ListS.ListRemoveFunc funcRemove) throws Exception {
+        Value v = funcRemove.remove();
+        results.push(v);
+    }
+
+    public void visit(ListS.ShowFigures funcShow) throws Exception {
+        ArrayList<Value> list = funcShow.getList();
+        if (list.size() > 0 && list.get(0).getType() != ValueType.V_FIGURE)
+            throw new IncorrectTypeException("Figure", (list.get(0).getType()).toString());
+
+        ArrayList<Figure> figures = funcShow.getListFigures(list);
+        JPanel pn = new JPanel(){
+            @Override
+            public void paint (Graphics g0) {
+                Graphics2D g = (Graphics2D)g0.create();
+                for (Figure fig : figures) {
+                    ArrayList<Integer> listX = new ArrayList<>();
+                    ArrayList<Integer> listY = new ArrayList<>();
+                    for (Point p: fig.points){
+                        listX.add(p.x);
+                        listY.add(p.y);
+                    }
+                    int[] xs = listX.stream().mapToInt(i->i).toArray();
+                    int[] ys = listY.stream().mapToInt(i->i).toArray();
+                    Polygon polygon0 = new Polygon(xs, ys, listX.size());
+                    g.setStroke(new BasicStroke(6));
+                    g.setColor(new Color(fig.colorR, fig.colorG, fig.colorB));
+                    g.drawPolygon(polygon0);
+                }
+            }
+        };
+        fr.add(pn);
+        fr.setVisible(true);
     }
 
     @Override

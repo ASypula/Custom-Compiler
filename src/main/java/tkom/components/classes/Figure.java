@@ -127,15 +127,14 @@ public class Figure implements IClass{
             return parameters;
         }
 
+        public void changeColors(int r, int g, int b){
+            colorR = r;
+            colorG = g;
+            colorB = b;
+        }
+
         public void accept(Visitor visitor) throws Exception {
-            Value v1 = ((Interpreter)visitor).getValue(param1);
-            Value v2 = ((Interpreter)visitor).getValue(param2);
-            Value v3 = ((Interpreter)visitor).getValue(param3);
-            if (v1.getType() != ValueType.V_INT || v2.getType() != ValueType.V_INT || v3.getType() != ValueType.V_INT)
-                throw new IncorrectTypeException("int", "non int", "setting Figure color");
-            colorR = v1.getIntValue();
-            colorG = v2.getIntValue();
-            colorB = v3.getIntValue();
+            visitor.visit(this);
         }
     }
 }
